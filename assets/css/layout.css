@@ -1,0 +1,199 @@
+/* Preview bar, header with store switcher, store hero band, footer. */
+
+.preview-bar {
+  background: var(--gold-100);
+  color: var(--green-900);
+  border-bottom: 1px solid #F1DE9A;
+  font-size: var(--step--1);
+  text-align: center;
+  padding: 6px var(--gutter);
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  background: rgba(255, 248, 233, .96);
+  border-bottom: 1px solid var(--line);
+  z-index: 40;
+}
+
+.site-header__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "brand actions"
+    "switch switch";
+  align-items: center;
+  gap: 10px 12px;
+  padding-block: 10px 12px;
+}
+
+@media (min-width: 760px) {
+  .site-header {
+    position: sticky;
+    top: 0;
+    backdrop-filter: saturate(1.2) blur(8px);
+  }
+  .site-header__row {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "brand switch actions";
+    padding-block: 12px;
+  }
+}
+
+.brand {
+  grid-area: brand;
+  display: inline-flex;
+  flex-direction: column;
+  width: max-content;
+  line-height: 1;
+  text-decoration: none;
+  color: var(--brand-strong);
+}
+
+.brand__name {
+  position: relative;
+  align-self: flex-start;
+  font-family: var(--font-script);
+  font-size: 2rem;
+  line-height: 1.05;
+  color: var(--brand);
+  padding-top: 4px;
+}
+
+/* Sits over the "i" of Bammie, like the flyer. Tuned for Kaushan Script. */
+.brand__crown {
+  position: absolute;
+  top: -.16em;
+  left: 2.6em;
+  width: .5em;
+  height: .5em;
+  color: var(--gold-500);
+}
+
+.brand__sub {
+  margin-top: 2px;
+  font-size: .64rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.store-switch {
+  grid-area: switch;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+
+@media (min-width: 760px) {
+  .store-switch { justify-self: center; min-width: 380px; }
+}
+
+.store-switch__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  font-size: .875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--muted);
+}
+.store-switch__link .icon { width: 18px; height: 18px; }
+.store-switch__link:hover { color: var(--ink); background: var(--cream-100); }
+
+.store-switch__link[data-store="varieties"][aria-current="page"] { background: var(--green-700); color: var(--white); }
+.store-switch__link[data-store="bake"][aria-current="page"] { background: var(--brown-800); color: var(--white); }
+
+.site-header__actions {
+  grid-area: actions;
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- Store hero band ---------- */
+.store-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 92% 10%, rgba(233, 178, 28, .28), transparent 42%),
+    var(--brand);
+  color: var(--white);
+  padding-block: 28px 32px;
+}
+.store-hero h1 { color: var(--white); font-size: var(--step-3); }
+.store-hero p { color: rgba(255, 255, 255, .86); margin-top: 6px; max-width: 620px; }
+.store-hero .eyebrow { color: var(--gold-500); }
+
+.store-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 16px;
+  font-size: .875rem;
+  color: rgba(255, 255, 255, .92);
+}
+.store-hero__meta li { display: inline-flex; align-items: center; gap: 6px; }
+.store-hero__meta .icon { color: var(--gold-500); }
+
+/* ---------- Footer ---------- */
+.site-footer {
+  margin-top: 48px;
+  padding-block: 44px 24px;
+  background: var(--brand-strong);
+  color: #E3ECE5;
+  font-size: .95rem;
+}
+.site-footer a { color: var(--white); }
+.site-footer .brand__name { color: var(--white); }
+.site-footer .brand__sub { color: #C9D8CD; }
+
+/* Phone: brand, then the two link lists side by side, then contact. Desktop: four columns. */
+.site-footer__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px 20px;
+}
+.site-footer__brand, .site-footer__contact { grid-column: 1 / -1; }
+@media (min-width: 860px) {
+  .site-footer__grid { grid-template-columns: 1.4fr 1fr 1fr 1.3fr; }
+  .site-footer__brand, .site-footer__contact { grid-column: auto; }
+}
+
+.site-footer h2 {
+  margin-bottom: 12px;
+  font-size: .78rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold-500);
+}
+
+.site-footer__tagline { margin-top: 14px; max-width: 320px; color: #D5E1D8; }
+
+.footer-links { display: grid; gap: 10px; }
+.footer-links a, .footer-links span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.footer-links a:hover { text-decoration: underline; }
+.footer-links .icon { color: var(--gold-500); }
+.footer-links small { color: #B9CBBE; }
+
+.site-footer__base {
+  margin-top: 36px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, .14);
+  font-size: .8rem;
+  color: #B9CBBE;
+}

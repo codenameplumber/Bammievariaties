@@ -1,0 +1,130 @@
+{
+  "_note": "SAMPLE menu for the preview build. Replace with Bammie's real items, packs, prices, notice (leadTimeDays) and minimums. Prices are whole naira.",
+  "categories": [
+    { "id": "snacks", "name": "Snacks", "blurb": "Chin chin, puff-puff and doughnuts", "icon": "bowl" },
+    { "id": "pastries", "name": "Pastries", "blurb": "Meat pie, sausage rolls and fish rolls", "icon": "pie" },
+    { "id": "small-chops", "name": "Small chops", "blurb": "Party packs and trays for your guests", "icon": "platter" },
+    { "id": "cakes", "name": "Cakes", "blurb": "Celebration cakes, loaf cakes and cupcakes", "icon": "cake" },
+    { "id": "meals", "name": "Meals", "blurb": "Party trays of jollof and fried rice", "icon": "pot" }
+  ],
+  "products": [
+    {
+      "id": "chin-chin", "store": "bake", "name": "Chin Chin", "category": "snacks",
+      "blurb": "Crunchy, lightly sweet and fried fresh. A weekend favourite.",
+      "options": [
+        { "id": "small", "label": "Small pack", "price": 1000 },
+        { "id": "jar", "label": "Medium jar", "price": 3000 },
+        { "id": "bucket", "label": "Big bucket", "price": 8000 }
+      ],
+      "leadTimeDays": 2, "minQty": 1, "image": null, "available": true
+    },
+    {
+      "id": "puff-puff", "store": "bake", "name": "Puff-Puff", "category": "snacks",
+      "blurb": "Soft, golden and fluffy. Best on the day it's made.",
+      "options": [
+        { "id": "pack-20", "label": "Pack of 20", "price": 2000 },
+        { "id": "pack-50", "label": "Pack of 50", "price": 4500 }
+      ],
+      "leadTimeDays": 1, "minQty": 1, "image": null, "available": true
+    },
+    {
+      "id": "doughnuts", "store": "bake", "name": "Doughnuts", "category": "snacks",
+      "blurb": "Sugar-dusted ring doughnuts.",
+      "options": [
+        { "id": "pack-6", "label": "Pack of 6", "price": 3000 },
+        { "id": "pack-12", "label": "Pack of 12", "price": 5500 }
+      ],
+      "leadTimeDays": 1, "minQty": 1, "image": null, "available": true
+    },
+    {
+      "id": "meat-pie", "store": "bake", "name": "Meat Pie", "category": "pastries",
+      "blurb": "Buttery pastry filled with minced meat, potato and carrot.",
+      "options": [
+        { "id": "pack-6", "label": "Pack of 6", "price": 4200 },
+        { "id": "pack-12", "label": "Pack of 12", "price": 8000 }
+      ],
+      "leadTimeDays": 2, "minQty": 1, "image": null, "available": true
+    },
+    {
+      "id": "sausage-roll", "store": "bake", "name": "Sausage Rolls", "category": "pastries",
+      "blurb": "Flaky pastry rolled around seasoned sausage.",
+      "options": [
+        { "id": "pack-6", "label": "Pack of 6", "price": 3000 },
+        { "id": "pack-12", "label": "Pack of 12", "price": 5700 }
+      ],
+      "leadTimeDays": 2, "minQty": 1, "image": null, "available": true
+    },
+    {
+      "id": "fish-roll", "store": "bake", "name": "Fish Rolls", "category": "pastries",
+      "blurb": "Spiced fish in a crisp fried dough.",
+      "options": [
+        { "id": "pack-6", "label": "Pack of 6", "price": 3000 }
+      ],
+      "leadTimeDays": 2, "minQty": 1, "image": null, "available": false
+    },
+    {
+      "id": "small-chops-pack", "store": "bake", "name": "Small Chops Pack", "category": "small-chops",
+      "blurb": "Samosa, spring roll, puff-puff and peppered chicken in one pack per guest.",
+      "options": [
+        { "id": "per-guest", "label": "1 pack (one guest)", "price": 2500 }
+      ],
+      "leadTimeDays": 3, "minQty": 10, "image": null, "available": true
+    },
+    {
+      "id": "small-chops-tray", "store": "bake", "name": "Small Chops Tray", "category": "small-chops",
+      "blurb": "A full tray of mixed small chops to share.",
+      "options": [
+        { "id": "tray-20", "label": "Tray for 20 guests", "price": 45000 },
+        { "id": "tray-40", "label": "Tray for 40 guests", "price": 85000 }
+      ],
+      "leadTimeDays": 3, "minQty": 1, "image": null, "available": true
+    },
+    {
+      "id": "celebration-cake", "store": "bake", "name": "Celebration Cake", "category": "cakes",
+      "blurb": "Vanilla, chocolate or red velvet. Tell us the flavour and colours in the note.",
+      "options": [
+        { "id": "8-inch", "label": "8-inch round", "price": 25000 },
+        { "id": "10-inch", "label": "10-inch round", "price": 35000 },
+        { "id": "12-inch", "label": "12-inch round", "price": 50000 }
+      ],
+      "leadTimeDays": 4, "minQty": 1, "messageAllowed": true, "image": null, "available": true
+    },
+    {
+      "id": "loaf-cake", "store": "bake", "name": "Loaf Cake", "category": "cakes",
+      "blurb": "Soft loaf cake, sliced and wrapped.",
+      "options": [
+        { "id": "vanilla", "label": "Vanilla", "price": 4000 },
+        { "id": "banana", "label": "Banana bread", "price": 4500 },
+        { "id": "chocolate", "label": "Chocolate", "price": 4500 }
+      ],
+      "leadTimeDays": 1, "minQty": 1, "image": null, "available": true
+    },
+    {
+      "id": "cupcakes", "store": "bake", "name": "Cupcakes", "category": "cakes",
+      "blurb": "Topped with buttercream swirls in your colours.",
+      "options": [
+        { "id": "box-6", "label": "Box of 6", "price": 6000 },
+        { "id": "box-12", "label": "Box of 12", "price": 11000 }
+      ],
+      "leadTimeDays": 2, "minQty": 1, "image": null, "available": true
+    },
+    {
+      "id": "jollof-tray", "store": "bake", "name": "Party Jollof Rice", "category": "meals",
+      "blurb": "Smoky party jollof with fried plantain and chicken.",
+      "options": [
+        { "id": "tray-10", "label": "Tray for 10 people", "price": 35000 },
+        { "id": "tray-20", "label": "Tray for 20 people", "price": 65000 }
+      ],
+      "leadTimeDays": 3, "minQty": 1, "image": null, "available": true
+    },
+    {
+      "id": "fried-rice-tray", "store": "bake", "name": "Fried Rice", "category": "meals",
+      "blurb": "Vegetable fried rice with chicken.",
+      "options": [
+        { "id": "tray-10", "label": "Tray for 10 people", "price": 37000 },
+        { "id": "tray-20", "label": "Tray for 20 people", "price": 68000 }
+      ],
+      "leadTimeDays": 3, "minQty": 1, "image": null, "available": true
+    }
+  ]
+}

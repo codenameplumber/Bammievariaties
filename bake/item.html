@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en-NG">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bammie Bake and Cook</title>
+  <meta name="description" content="Pre-order from Bammie Bake and Cook, made fresh for your date.">
+  <meta name="theme-color" content="#5A2A17">
+  <link rel="icon" href="../assets/img/brand/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/store.css">
+  <script type="module" src="../assets/js/pages/bake-item.js"></script>
+</head>
+<body class="theme-bake" data-store="bake">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="preview-bar" data-preview hidden>Preview version: the menu and prices are samples while the shop is being set up.</div>
+
+  <header class="site-header">
+    <div class="container site-header__row">
+      <a class="brand" href="../" aria-label="Bammie home">
+        <span class="brand__name">Bammie<svg class="brand__crown" aria-hidden="true"><use href="../assets/img/icons.svg#crown"/></svg></span>
+        <span class="brand__sub">Varieties · Bake &amp; Cook</span>
+      </a>
+      <nav class="store-switch" aria-label="Stores">
+        <a class="store-switch__link" data-store="varieties" href="../varieties/"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#basket"/></svg>Varieties Store</a>
+        <a class="store-switch__link" data-store="bake" href="./" aria-current="page"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#cupcake"/></svg>Bake &amp; Cook</a>
+      </nav>
+      <div class="site-header__actions">
+        <a class="icon-btn icon-btn--whatsapp" href="#" data-whatsapp="" aria-label="Chat with Bammie on WhatsApp"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#whatsapp"/></svg></a>
+        <a class="icon-btn" href="../varieties/cart.html" aria-label="Varieties Store cart" data-cart-link="varieties" hidden><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#cart"/></svg><span class="count-badge" data-cart-count="varieties" hidden>0</span></a>
+        <a class="icon-btn" href="cart.html" aria-label="Bake &amp; Cook pre-order"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#cupcake"/></svg><span class="count-badge" data-cart-count="bake" hidden>0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="container page-head">
+      <a class="link-btn back-link" href="./"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#arrow-left"/></svg>Bake &amp; Cook menu</a>
+    </div>
+    <div class="container item-layout" data-item>
+      <p class="loading">Loading…</p>
+    </div>
+  </main>
+
+  <div class="cart-bar" data-cart-bar hidden>
+    <a class="cart-bar__inner" href="cart.html">
+      <span class="cart-bar__summary" data-cart-bar-summary></span>
+      <span class="btn btn--gold btn--sm">View pre-order <svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#arrow-right"/></svg></span>
+    </a>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <a class="brand" href="../" aria-label="Bammie home">
+            <span class="brand__name">Bammie<svg class="brand__crown" aria-hidden="true"><use href="../assets/img/icons.svg#crown"/></svg></span>
+            <span class="brand__sub">Varieties · Bake &amp; Cook</span>
+          </a>
+          <p class="site-footer__tagline">Foodstuffs, provisions, stationery and treats made with love.</p>
+        </div>
+        <nav aria-labelledby="footer-shop">
+          <h2 id="footer-shop">Shop</h2>
+          <ul class="footer-links" role="list">
+            <li><a href="../varieties/">Varieties Store</a></li>
+            <li><a href="../varieties/?cat=bammie-chips">Bammie Chips</a></li>
+            <li><a href="../bake/">Bake &amp; Cook</a></li>
+            <li><a href="../bake/custom-order.html">Order for an occasion</a></li>
+          </ul>
+        </nav>
+        <nav aria-labelledby="footer-bammie">
+          <h2 id="footer-bammie">Bammie</h2>
+          <ul class="footer-links" role="list">
+            <li><a href="../about.html">About us</a></li>
+            <li><a href="../about.html#visit">Visit the shop</a></li>
+            <li><a href="../my-orders.html">My orders</a></li>
+          </ul>
+        </nav>
+        <div class="site-footer__contact">
+          <h2>Talk to us</h2>
+          <ul class="footer-links" role="list" data-contact-list></ul>
+        </div>
+      </div>
+      <p class="site-footer__base">© <span data-year>2026</span> Bammie Varieties Store · Bammie Bake and Cook</p>
+    </div>
+  </footer>
+</body>
+</html>

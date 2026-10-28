@@ -1,0 +1,14 @@
+{
+  "_note": "SAMPLE weekly batch: what Bammie would post on her WhatsApp status. Update every week; set items to [] when there is no batch. 'limit' is shown to customers but only enforced per order until the backend counts stock.",
+  "id": "2026-w44",
+  "title": "Weekend batch",
+  "blurb": "Fresh chin chin, meat pie and puff-puff for your weekend. Limited packs.",
+  "orderBy": "2026-10-29T18:00:00+01:00",
+  "readyOn": "2026-10-31",
+  "items": [
+    { "itemId": "chin-chin", "option": "small", "limit": 40 },
+    { "itemId": "chin-chin", "option": "jar", "limit": 10 },
+    { "itemId": "meat-pie", "option": "pack-6", "limit": 20 },
+    { "itemId": "puff-puff", "option": "pack-20", "limit": 25 }
+  ]
+}

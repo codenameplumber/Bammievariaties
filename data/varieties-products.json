@@ -1,0 +1,48 @@
+{
+  "_note": "SAMPLE catalogue for the preview build. Replace with Bammie's real items and prices. Prices are whole naira.",
+  "categories": [
+    { "id": "foodstuffs", "name": "Foodstuffs", "blurb": "Rice, beans, garri, grains and soup items", "icon": "sack" },
+    { "id": "provisions", "name": "Provisions", "blurb": "Noodles, pasta, milk, beverages, oil and seasoning", "icon": "can" },
+    { "id": "bammie-chips", "name": "Bammie Chips", "blurb": "Our own crunchy plantain, potato, cocoyam and coconut chips", "icon": "chips" },
+    { "id": "stationery", "name": "Stationery", "blurb": "Books, biros, pencils and school needs", "icon": "pencil" },
+    { "id": "household", "name": "Household", "blurb": "Detergent, soap and tissue", "icon": "bottle" }
+  ],
+  "products": [
+    { "id": "rice-5kg", "store": "varieties", "name": "Long-grain Rice", "category": "foodstuffs", "price": 9500, "unit": "5kg bag", "image": null, "inStock": true, "featured": true },
+    { "id": "rice-derica", "store": "varieties", "name": "Rice", "category": "foodstuffs", "price": 1800, "unit": "1 derica", "image": null, "inStock": true, "featured": false },
+    { "id": "honey-beans-derica", "store": "varieties", "name": "Honey Beans (Oloyin)", "category": "foodstuffs", "price": 2200, "unit": "1 derica", "image": null, "inStock": true, "featured": true },
+    { "id": "garri-white-derica", "store": "varieties", "name": "White Garri", "category": "foodstuffs", "price": 900, "unit": "1 derica", "image": null, "inStock": true, "featured": false },
+    { "id": "garri-yellow-derica", "store": "varieties", "name": "Yellow Garri", "category": "foodstuffs", "price": 1000, "unit": "1 derica", "image": null, "inStock": true, "featured": false },
+    { "id": "semovita-1kg", "store": "varieties", "name": "Semovita", "category": "foodstuffs", "price": 1700, "unit": "1kg pack", "image": null, "inStock": true, "featured": false },
+    { "id": "palm-oil-1l", "store": "varieties", "name": "Palm Oil", "category": "foodstuffs", "price": 2500, "unit": "1 litre bottle", "image": null, "inStock": true, "featured": false },
+    { "id": "egusi-cup", "store": "varieties", "name": "Ground Egusi", "category": "foodstuffs", "price": 1500, "unit": "1 cup", "image": null, "inStock": true, "featured": false },
+    { "id": "crayfish-cup", "store": "varieties", "name": "Ground Crayfish", "category": "foodstuffs", "price": 1500, "unit": "1 cup", "image": null, "inStock": true, "featured": false },
+
+    { "id": "indomie-carton", "store": "varieties", "name": "Indomie Noodles (Chicken)", "category": "provisions", "price": 9800, "unit": "Carton of 40", "image": null, "inStock": true, "featured": true },
+    { "id": "indomie-single", "store": "varieties", "name": "Indomie Noodles (Chicken)", "category": "provisions", "price": 300, "unit": "Single pack", "image": null, "inStock": true, "featured": false },
+    { "id": "spaghetti-500g", "store": "varieties", "name": "Spaghetti", "category": "provisions", "price": 1300, "unit": "500g pack", "image": null, "inStock": true, "featured": false },
+    { "id": "evaporated-milk-tin", "store": "varieties", "name": "Evaporated Milk", "category": "provisions", "price": 650, "unit": "Tin", "image": null, "inStock": true, "featured": false },
+    { "id": "chocolate-drink-500g", "store": "varieties", "name": "Chocolate Drink", "category": "provisions", "price": 4200, "unit": "500g refill", "image": null, "inStock": true, "featured": false },
+    { "id": "sugar-1kg", "store": "varieties", "name": "Granulated Sugar", "category": "provisions", "price": 1800, "unit": "1kg pack", "image": null, "inStock": true, "featured": false },
+    { "id": "vegetable-oil-1l", "store": "varieties", "name": "Vegetable Oil", "category": "provisions", "price": 3200, "unit": "1 litre", "image": null, "inStock": true, "featured": false },
+    { "id": "seasoning-cubes", "store": "varieties", "name": "Seasoning Cubes", "category": "provisions", "price": 1300, "unit": "Pack of 50", "image": null, "inStock": true, "featured": false },
+    { "id": "table-water-pack", "store": "varieties", "name": "Table Water", "category": "provisions", "price": 2000, "unit": "Pack of 12 (75cl)", "image": null, "inStock": true, "featured": false },
+
+    { "id": "plantain-chips-small", "store": "varieties", "name": "Plantain Chips", "category": "bammie-chips", "price": 500, "unit": "Small pack", "image": null, "inStock": true, "featured": true },
+    { "id": "plantain-chips-big", "store": "varieties", "name": "Plantain Chips", "category": "bammie-chips", "price": 1000, "unit": "Big pack", "image": null, "inStock": true, "featured": false },
+    { "id": "potato-chips", "store": "varieties", "name": "Potato Chips", "category": "bammie-chips", "price": 700, "unit": "Pack", "image": null, "inStock": true, "featured": true },
+    { "id": "cocoyam-chips", "store": "varieties", "name": "Cocoyam Chips", "category": "bammie-chips", "price": 700, "unit": "Pack", "image": null, "inStock": true, "featured": true },
+    { "id": "coconut-chips", "store": "varieties", "name": "Coconut Chips", "category": "bammie-chips", "price": 800, "unit": "Pack", "image": null, "inStock": true, "featured": true },
+
+    { "id": "exercise-books-12", "store": "varieties", "name": "Exercise Books (40 leaves)", "category": "stationery", "price": 2400, "unit": "Pack of 12", "image": null, "inStock": true, "featured": false },
+    { "id": "biro-blue-12", "store": "varieties", "name": "Blue Biros", "category": "stationery", "price": 1500, "unit": "Pack of 12", "image": null, "inStock": true, "featured": false },
+    { "id": "hb-pencils-12", "store": "varieties", "name": "HB Pencils", "category": "stationery", "price": 1200, "unit": "Pack of 12", "image": null, "inStock": true, "featured": false },
+    { "id": "colour-pencils-12", "store": "varieties", "name": "Colour Pencils", "category": "stationery", "price": 1500, "unit": "Pack of 12", "image": null, "inStock": true, "featured": false },
+    { "id": "maths-set", "store": "varieties", "name": "Mathematical Set", "category": "stationery", "price": 1500, "unit": "Set", "image": null, "inStock": true, "featured": false },
+    { "id": "a4-paper-ream", "store": "varieties", "name": "A4 Paper", "category": "stationery", "price": 6500, "unit": "Ream (500 sheets)", "image": null, "inStock": false, "featured": false },
+
+    { "id": "washing-powder-900g", "store": "varieties", "name": "Washing Powder", "category": "household", "price": 2000, "unit": "900g", "image": null, "inStock": true, "featured": false },
+    { "id": "bar-soap-3", "store": "varieties", "name": "Bar Soap", "category": "household", "price": 1200, "unit": "Pack of 3", "image": null, "inStock": true, "featured": false },
+    { "id": "toilet-tissue-4", "store": "varieties", "name": "Toilet Tissue", "category": "household", "price": 1600, "unit": "Pack of 4", "image": null, "inStock": true, "featured": false }
+  ]
+}

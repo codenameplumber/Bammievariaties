@@ -1,0 +1,75 @@
+/* Design tokens — colours taken from the Bammie flyer. */
+:root {
+  --green-900: #0F3D22;
+  --green-700: #1E5631;
+  --green-600: #2A6B3F;
+  --green-100: #DCEBDD;
+  --green-50: #EEF5EF;
+
+  --gold-500: #E9B21C;
+  --gold-400: #F2C440;
+  --gold-100: #FBEFC8;
+
+  --brown-900: #3E1C0E;
+  --brown-800: #5A2A17;
+  --brown-100: #F1E2D8;
+  --brown-50: #F8EFE9;
+
+  --cream-50: #FFF8E9;
+  --cream-100: #FBF0D9;
+  --white: #FFFFFF;
+
+  --ink: #1F1B16;
+  --muted: #625A4E;
+  --line: #E7DCC6;
+  --line-strong: #D9CCB2;
+  --danger: #B3261E;
+  --danger-50: #FCEDEC;
+  --whatsapp: #157A43; /* darker than WhatsApp's own green so white text passes contrast */
+
+  --font-script: 'Kaushan Script', 'Brush Script MT', cursive;
+  --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.125rem;
+  --step-2: 1.375rem;
+  --step-3: clamp(1.6rem, 1.2rem + 1.6vw, 2.1rem);
+  --step-4: clamp(2rem, 1.35rem + 2.8vw, 3.1rem);
+
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  --shadow-1: 0 1px 2px rgba(31, 27, 22, .05), 0 2px 8px rgba(31, 27, 22, .05);
+  --shadow-2: 0 8px 28px rgba(31, 27, 22, .14);
+
+  --container: 1120px;
+  --gutter: 16px;
+
+  /* Store theme: green by default, brown on Bake & Cook pages. */
+  --brand: var(--green-700);
+  --brand-strong: var(--green-900);
+  --brand-soft: var(--green-50);
+  --brand-tint: var(--green-100);
+  --on-brand: var(--white);
+}
+
+.theme-varieties {
+  --brand: var(--green-700);
+  --brand-strong: var(--green-900);
+  --brand-soft: var(--green-50);
+  --brand-tint: var(--green-100);
+}
+
+.theme-bake {
+  --brand: var(--brown-800);
+  --brand-strong: var(--brown-900);
+  --brand-soft: var(--brown-50);
+  --brand-tint: var(--brown-100);
+}
+
+@media (min-width: 640px) {
+  :root { --gutter: 24px; }
+}

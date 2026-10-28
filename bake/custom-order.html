@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en-NG">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order for an occasion | Bammie Bake and Cook</title>
+  <meta name="description" content="Planning a birthday, wedding, naming ceremony or office event? Tell Bammie Bake and Cook the date and number of guests and get a quote on WhatsApp.">
+  <meta name="theme-color" content="#5A2A17">
+  <link rel="icon" href="../assets/img/brand/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/store.css">
+  <script type="module" src="../assets/js/pages/custom-order.js"></script>
+</head>
+<body class="theme-bake" data-store="bake">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="preview-bar" data-preview hidden>Preview version: the menu and prices are samples while the shop is being set up.</div>
+
+  <header class="site-header">
+    <div class="container site-header__row">
+      <a class="brand" href="../" aria-label="Bammie home">
+        <span class="brand__name">Bammie<svg class="brand__crown" aria-hidden="true"><use href="../assets/img/icons.svg#crown"/></svg></span>
+        <span class="brand__sub">Varieties · Bake &amp; Cook</span>
+      </a>
+      <nav class="store-switch" aria-label="Stores">
+        <a class="store-switch__link" data-store="varieties" href="../varieties/"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#basket"/></svg>Varieties Store</a>
+        <a class="store-switch__link" data-store="bake" href="./" aria-current="page"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#cupcake"/></svg>Bake &amp; Cook</a>
+      </nav>
+      <div class="site-header__actions">
+        <a class="icon-btn icon-btn--whatsapp" href="#" data-whatsapp="" aria-label="Chat with Bammie on WhatsApp"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#whatsapp"/></svg></a>
+        <a class="icon-btn" href="../varieties/cart.html" aria-label="Varieties Store cart" data-cart-link="varieties" hidden><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#cart"/></svg><span class="count-badge" data-cart-count="varieties" hidden>0</span></a>
+        <a class="icon-btn" href="cart.html" aria-label="Bake &amp; Cook pre-order"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#cupcake"/></svg><span class="count-badge" data-cart-count="bake" hidden>0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="container page-head">
+      <a class="link-btn back-link" href="./"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#arrow-left"/></svg>Bake &amp; Cook menu</a>
+      <h1>Order for an occasion</h1>
+      <p>Tell us about your event and Bammie will send you a quote on WhatsApp.</p>
+    </div>
+
+    <form class="container split-layout" novalidate data-request>
+      <div>
+        <div class="notice notice--soft saved-note" data-saved-note hidden>
+          <span>Welcome back! We filled in your details from last time.</span>
+          <button type="button" class="link-btn" data-forget>Not you? Clear them</button>
+        </div>
+
+        <section class="form-section" aria-labelledby="s1-title">
+          <h2 class="form-section__title" id="s1-title"><span class="form-section__num">1</span>Your event</h2>
+          <div class="field-row field-row--2">
+            <div class="field" data-field="eventType">
+              <label class="field__label" for="eventType">What's the occasion?</label>
+              <select class="input select" id="eventType" name="eventType" data-occasions required>
+                <option value="">Choose…</option>
+              </select>
+              <p class="field__error" id="eventType-error" hidden></p>
+            </div>
+            <div class="field" data-field="guests">
+              <label class="field__label" for="guests">How many guests?</label>
+              <input class="input" id="guests" name="guests" type="number" inputmode="numeric" min="1" max="2000" placeholder="e.g. 50" required>
+              <p class="field__error" id="guests-error" hidden></p>
+            </div>
+          </div>
+          <div class="field" data-field="eventDate">
+            <label class="field__label" for="eventDate">Date of the event</label>
+            <input class="input" id="eventDate" name="eventDate" type="date" required aria-describedby="eventDate-hint">
+            <p class="field__hint" id="eventDate-hint" data-date-hint></p>
+            <p class="field__error" id="eventDate-error" hidden></p>
+          </div>
+          <fieldset class="field" data-field="timeSlot">
+            <legend class="field__label">When do you need it ready?</legend>
+            <div class="choices choices--3" data-slots></div>
+            <p class="field__error" id="timeSlot-error" hidden></p>
+          </fieldset>
+        </section>
+
+        <section class="form-section" aria-labelledby="s2-title">
+          <h2 class="form-section__title" id="s2-title"><span class="form-section__num">2</span>What would you like?</h2>
+          <fieldset class="field" data-field="wants">
+            <legend class="field__label">Tick everything you're thinking of</legend>
+            <div class="choices choices--grid" data-wants></div>
+            <p class="field__error" id="wants-error" hidden></p>
+          </fieldset>
+          <div class="field">
+            <label class="field__label" for="details">Tell us more <span class="opt">(optional)</span></label>
+            <textarea class="textarea" id="details" name="details" maxlength="500" placeholder="Flavours, colours, theme, how many trays, allergies…"></textarea>
+          </div>
+          <div class="field">
+            <label class="field__label" for="budget">Budget <span class="opt">(optional)</span></label>
+            <select class="input select" id="budget" name="budget">
+              <option value="">Not sure yet</option>
+              <option>Under ₦50,000</option>
+              <option>₦50,000 – ₦100,000</option>
+              <option>₦100,000 – ₦250,000</option>
+              <option>Above ₦250,000</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="form-section" aria-labelledby="s3-title">
+          <h2 class="form-section__title" id="s3-title"><span class="form-section__num">3</span>Your details</h2>
+          <div class="field-row field-row--2">
+            <div class="field" data-field="name">
+              <label class="field__label" for="name">Full name</label>
+              <input class="input" id="name" name="name" autocomplete="name" maxlength="80" required>
+              <p class="field__error" id="name-error" hidden></p>
+            </div>
+            <div class="field" data-field="phone">
+              <label class="field__label" for="phone">Phone number (WhatsApp)</label>
+              <input class="input" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0803 123 4567" maxlength="20" required aria-describedby="phone-hint">
+              <p class="field__hint" id="phone-hint">Bammie will send your quote to this number.</p>
+              <p class="field__error" id="phone-error" hidden></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section" aria-labelledby="s4-title">
+          <h2 class="form-section__title" id="s4-title"><span class="form-section__num">4</span>Getting it to your event</h2>
+          <fieldset class="field" data-field="fulfilment">
+            <legend class="visually-hidden">Delivery or pickup?</legend>
+            <div class="choices choices--2">
+              <label class="choice">
+                <input type="radio" name="fulfilment" value="delivery">
+                <span class="choice__icon"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#truck"/></svg></span>
+                <span><span class="choice__title">Deliver to the venue</span><span class="choice__text">The fee depends on the area.</span></span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="fulfilment" value="pickup">
+                <span class="choice__icon"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#store"/></svg></span>
+                <span><span class="choice__title">I'll pick it up</span><span class="choice__text">You or your rider collect it from our shop.</span></span>
+              </label>
+            </div>
+            <p class="field__error" id="fulfilment-error" hidden></p>
+          </fieldset>
+          <div class="field-row field-row--2" data-when="delivery" hidden>
+            <div class="field" data-field="address">
+              <label class="field__label" for="address">Venue address</label>
+              <input class="input" id="address" name="address" autocomplete="street-address" maxlength="160" placeholder="Venue name, number and street">
+              <p class="field__error" id="address-error" hidden></p>
+            </div>
+            <div class="field" data-field="area">
+              <label class="field__label" for="area">Area or nearest landmark</label>
+              <input class="input" id="area" name="area" maxlength="80" placeholder="e.g. Opposite the mosque, Agbado">
+              <p class="field__error" id="area-error" hidden></p>
+            </div>
+          </div>
+          <label class="check">
+            <input type="checkbox" name="remember" checked>
+            <span>Remember my details on this phone for next time</span>
+          </label>
+        </section>
+      </div>
+
+      <aside class="split-layout__aside">
+        <div class="card summary" aria-labelledby="next-title">
+          <h2 id="next-title">What happens next</h2>
+          <ol class="item-facts next-steps" role="list">
+            <li><span class="step__num">1</span><span>You send this request to Bammie on WhatsApp.</span></li>
+            <li><span class="step__num">2</span><span>Bammie replies with a quote and any questions.</span></li>
+            <li><span class="step__num">3</span><span>A deposit secures your date, then she cooks fresh for your event.</span></li>
+          </ol>
+          <div class="summary__actions">
+            <button type="submit" class="btn btn--brand btn--lg btn--block" data-submit>Send request <svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#arrow-right"/></svg></button>
+          </div>
+          <p class="summary__note">No payment now. Nothing is booked until Bammie confirms.</p>
+        </div>
+      </aside>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <a class="brand" href="../" aria-label="Bammie home">
+            <span class="brand__name">Bammie<svg class="brand__crown" aria-hidden="true"><use href="../assets/img/icons.svg#crown"/></svg></span>
+            <span class="brand__sub">Varieties · Bake &amp; Cook</span>
+          </a>
+          <p class="site-footer__tagline">Foodstuffs, provisions, stationery and treats made with love.</p>
+        </div>
+        <nav aria-labelledby="footer-shop">
+          <h2 id="footer-shop">Shop</h2>
+          <ul class="footer-links" role="list">
+            <li><a href="../varieties/">Varieties Store</a></li>
+            <li><a href="../varieties/?cat=bammie-chips">Bammie Chips</a></li>
+            <li><a href="../bake/">Bake &amp; Cook</a></li>
+            <li><a href="../bake/custom-order.html">Order for an occasion</a></li>
+          </ul>
+        </nav>
+        <nav aria-labelledby="footer-bammie">
+          <h2 id="footer-bammie">Bammie</h2>
+          <ul class="footer-links" role="list">
+            <li><a href="../about.html">About us</a></li>
+            <li><a href="../about.html#visit">Visit the shop</a></li>
+            <li><a href="../my-orders.html">My orders</a></li>
+          </ul>
+        </nav>
+        <div class="site-footer__contact">
+          <h2>Talk to us</h2>
+          <ul class="footer-links" role="list" data-contact-list></ul>
+        </div>
+      </div>
+      <p class="site-footer__base">© <span data-year>2026</span> Bammie Varieties Store · Bammie Bake and Cook</p>
+    </div>
+  </footer>
+</body>
+</html>

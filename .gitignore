@@ -1,0 +1,11 @@
+# Client brief, voice-note transcripts, real customer data — never public
+_private/
+
+# OS / editor
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+
+# Claude Code local state
+.claude/
