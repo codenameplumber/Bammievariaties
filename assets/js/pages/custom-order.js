@@ -2,7 +2,8 @@
 // BC- request and moves on to order.html, where it goes to Bammie on WhatsApp
 // and she replies with a quote.
 import { BAKE } from '../config.js';
-import { initPage, siteUrl } from '../ui.js';
+import { getSettings } from '../settings.js';
+import { initPage, siteUrl, storeIsOpen } from '../ui.js';
 import { placeOrder } from '../api.js';
 import { loadCustomer, saveCustomer, forgetCustomer, normalisePhone, displayPhone } from '../customer.js';
 import { makeRef } from '../orders.js';
@@ -12,7 +13,7 @@ import { timeSlotChoices, occasionOptions, wantChoices } from '../bake-form.js';
 
 const STORE = 'bake';
 const form = document.querySelector('[data-request]');
-const earliest = addDays(todayISO(), BAKE.occasionLeadDays);
+const earliest = addDays(todayISO(), getSettings().occasionLeadDays);
 const latest = addDays(todayISO(), 365);
 
 initPage();
@@ -22,10 +23,11 @@ form.querySelector('[data-slots]').innerHTML = timeSlotChoices();
 form.querySelector('[data-wants]').innerHTML = wantChoices();
 form.elements.eventDate.min = earliest;
 form.elements.eventDate.max = latest;
-form.querySelector('[data-date-hint]').textContent = `Earliest: ${formatDay(earliest)}. We need at least ${BAKE.occasionLeadDays} days to plan an occasion.`;
+form.querySelector('[data-date-hint]').textContent = `Earliest: ${formatDay(earliest)}. We need at least ${getSettings().occasionLeadDays} days to plan an occasion.`;
 
 prefill(loadCustomer());
 updateForFulfilment();
+if (!storeIsOpen(STORE)) form.querySelector('[data-submit]').disabled = true; // paused in Settings
 clearErrorsOnEdit(form);
 
 form.addEventListener('change', (e) => {

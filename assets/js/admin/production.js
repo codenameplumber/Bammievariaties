@@ -1,105 +1,109 @@
-// Production list: Bake & Cook pre-orders due in the next 7 days, one card per
-// day. Each day starts with what to make (totals per item and pack), then the
-// orders, each with a "Ready" tick so Bammie can work down the list.
-import { BAKE } from '../config.js';
-import { escapeHtml } from '../ui.js';
-import { getAdminOrders, getReadyRefs, setOrderReady } from '../api.js';
+// Production list: pre-orders due in the next 7 days, one card per day — what to
+// make (totals per item and size), then each order with a "Ready" tick.
+import { loadShop, updateOrder } from '../api.js';
 import { todayISO, addDays, formatDay } from '../dates.js';
-import { displayPhone } from '../customer.js';
-import { initAdmin, PAY_STATUS } from './admin-ui.js';
+import { initShell, setBadges } from './shell.js';
+import { openOrderModal } from './order-modal.js';
+import { escapeHtml, displayPhone, paymentBadge, slotLabel, toast } from './common.js';
 
-initAdmin();
+initShell();
+
+let all = (await loadShop()).orders;
+setBadges(all);
 
 const today = todayISO();
 const last = addDays(today, 6);
-const slots = Object.keys(BAKE.timeSlots);
-
-const [orders, ready] = await Promise.all([getAdminOrders(), getReadyRefs()]);
-const due = orders
-  .filter((o) => o.store === 'bake' && o.type !== 'request' && o.neededBy >= today && o.neededBy <= last)
-  .sort((a, b) => a.neededBy.localeCompare(b.neededBy) || slots.indexOf(a.timeSlot) - slots.indexOf(b.timeSlot) || (a.customer?.name ?? '').localeCompare(b.customer?.name ?? ''));
-
-const days = [...new Set(due.map((o) => o.neededBy))];
-const dayName = (d) => (d === today ? 'Today' : d === addDays(today, 1) ? 'Tomorrow' : formatDay(d).split(',')[0]);
+const SLOTS = ['morning', 'afternoon', 'evening'];
 
 document.querySelector('[data-print]').addEventListener('click', () => window.print());
 render();
 
+function due() {
+  return all
+    .filter((o) => o.store === 'bake' && o.type !== 'request' && ['requested', 'confirmed', 'ready'].includes(o.status) && o.neededBy >= today && o.neededBy <= last)
+    .sort((a, b) => a.neededBy.localeCompare(b.neededBy) || SLOTS.indexOf(a.timeSlot) - SLOTS.indexOf(b.timeSlot));
+}
+
+function dayName(d) {
+  if (d === today) return `Today · ${formatDay(d)}`;
+  if (d === addDays(today, 1)) return `Tomorrow · ${formatDay(d)}`;
+  return formatDay(d);
+}
+
 function render() {
-  const nav = document.querySelector('[data-days-nav]');
+  const list = due();
+  const days = [...new Set(list.map((o) => o.neededBy))];
   const box = document.querySelector('[data-days]');
+  document.querySelector('[data-days-nav]').innerHTML = days.map((d) =>
+    `<a class="btn btn-outline-primary" href="#day-${d}">${escapeHtml(dayName(d).split(' · ')[0])}<span class="count">${list.filter((o) => o.neededBy === d).length}</span></a>`).join('');
   if (!days.length) {
-    nav.hidden = true;
-    box.innerHTML = '<div class="panel"><p class="panel__note">No pre-orders due in the next 7 days.</p></div>';
+    box.innerHTML = '<div class="card-panel text-muted">No pre-orders due in the next 7 days.</div>';
     return;
   }
-  nav.innerHTML = days.map((d) => `<a class="chip" href="#day-${d}">${dayName(d)} (${due.filter((o) => o.neededBy === d).length})</a>`).join('');
-  box.innerHTML = days.map(dayCard).join('');
+  box.innerHTML = days.map((d) => {
+    const orders = list.filter((o) => o.neededBy === d);
+    const ready = orders.filter((o) => o.status === 'ready').length;
+    return `
+      <section class="card-panel" id="day-${d}" aria-labelledby="day-${d}-title">
+        <div class="panel-head">
+          <h2 id="day-${d}-title" class="h5">${escapeHtml(dayName(d))}</h2>
+          <span class="small text-muted">${ready} of ${orders.length} ready</span>
+        </div>
+        <h3 class="visually-hidden">To make</h3>
+        <ul class="make-list">${makeList(orders)}</ul>
+        <h3 class="visually-hidden">Orders</h3>
+        ${orders.map(row).join('')}
+      </section>`;
+  }).join('');
 }
 
-function dayCard(day) {
-  const list = due.filter((o) => o.neededBy === day);
-  const done = list.filter((o) => ready.has(o.ref)).length;
-  return `
-    <section class="panel" id="day-${day}" aria-labelledby="day-${day}-title">
-      <div class="prod-day__head">
-        <h2 id="day-${day}-title">${day <= addDays(today, 1) ? `${dayName(day)} · ` : ''}${formatDay(day)}</h2>
-        <span class="prod-day__count" data-progress="${day}">${done} of ${list.length} ready</span>
-      </div>
-      <h3 class="visually-hidden">To make</h3>
-      <ul class="make-list" role="list">${makeList(list)}</ul>
-      <h3 class="visually-hidden">Orders</h3>
-      ${list.map(orderRow).join('')}
-    </section>`;
-}
-
-// "Meat Pie — 14 × Pack of 6 · 3 × Pack of 12"
-function makeList(list) {
+function makeList(orders) {
   const byItem = new Map();
-  for (const o of list) {
+  for (const o of orders) {
     for (const i of o.items) {
-      const packs = byItem.get(i.name) ?? new Map();
-      packs.set(i.unit, (packs.get(i.unit) ?? 0) + i.qty);
-      byItem.set(i.name, packs);
+      const sizes = byItem.get(i.name) ?? new Map();
+      sizes.set(i.unit, (sizes.get(i.unit) ?? 0) + i.qty);
+      byItem.set(i.name, sizes);
     }
   }
-  return [...byItem].sort(([a], [b]) => a.localeCompare(b)).map(([name, packs]) => `
-    <li>
-      <span class="make-list__name">${escapeHtml(name)}</span>
-      <span class="make-list__qty">${[...packs].map(([unit, qty]) => `${qty} × ${escapeHtml(unit)}`).join(' · ')}</span>
-    </li>`).join('');
+  return [...byItem].sort(([a], [b]) => a.localeCompare(b)).map(([name, sizes]) =>
+    `<li><strong>${escapeHtml(name)}</strong><span>${[...sizes].map(([unit, qty]) => `${qty} × ${escapeHtml(unit)}`).join(' · ')}</span></li>`).join('');
 }
 
-function orderRow(o) {
-  const isReady = ready.has(o.ref);
+function row(o) {
   const id = `ready-${o.ref}`;
-  const where = o.fulfilment === 'delivery' ? `Delivery${o.area ? `, ${o.area}` : ''}` : 'Pickup';
+  const ready = o.status === 'ready';
+  const where = o.fulfilment === 'delivery' ? `Delivery${o.customer?.area || o.area ? `, ${o.customer?.area || o.area}` : ''}` : 'Pickup';
   return `
-    <div class="prod-order${isReady ? ' is-ready' : ''}" data-ref="${escapeHtml(o.ref)}">
-      <input type="checkbox" id="${escapeHtml(id)}" ${isReady ? 'checked' : ''} aria-describedby="${escapeHtml(id)}-what">
-      <div class="prod-order__body">
-        <div class="prod-order__top">
-          <label class="prod-order__who" for="${escapeHtml(id)}">${escapeHtml(o.customer?.name || 'Customer')}</label>
-          <span class="pill pill--neutral">${escapeHtml(BAKE.timeSlots[o.timeSlot] ?? 'Any time')}</span>
-          <span class="pill pill--${o.payment.status}">${PAY_STATUS[o.payment.status]}</span>
-          ${o.status === 'requested' ? '<span class="pill pill--unpaid">Not confirmed yet</span>' : ''}
+    <div class="prod-order${ready ? ' is-ready' : ''}">
+      <input class="form-check-input" type="checkbox" id="${escapeHtml(id)}" data-ready="${escapeHtml(o.ref)}" ${ready ? 'checked' : ''}>
+      <div class="body">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <label class="fw-semibold" for="${escapeHtml(id)}">${escapeHtml(o.customer?.name || 'Customer')}</label>
+          <span class="badge-soft secondary">${escapeHtml(slotLabel(o.timeSlot) || 'Any time')}</span>
+          ${paymentBadge(o)}
+          ${o.status === 'requested' ? '<span class="badge-soft warning">Not confirmed yet</span>' : ''}
         </div>
-        <p class="prod-order__items" id="${escapeHtml(id)}-what">${o.items.map((i) => `${i.qty} × ${escapeHtml(i.name)} (${escapeHtml(i.unit)})`).join(', ')}</p>
-        ${o.cakeMessage ? `<p class="prod-order__meta">On the cake: “${escapeHtml(o.cakeMessage)}”</p>` : ''}
-        <p class="prod-order__meta">${escapeHtml(where)}${o.occasion ? ` · ${escapeHtml(o.occasion)}` : ''}${o.customer?.phone ? ` · ${escapeHtml(displayPhone(o.customer.phone))}` : ''} · ${escapeHtml(o.ref)}</p>
+        <p class="items mb-1 mt-1">${o.items.map((i) => `${i.qty} × ${escapeHtml(i.name)} (${escapeHtml(i.unit)})`).join(', ')}</p>
+        ${o.cakeMessage ? `<p class="small mb-1">On the cake: “${escapeHtml(o.cakeMessage)}”</p>` : ''}
+        <p class="small text-muted mb-0">${escapeHtml(where)}${o.customer?.phone ? ` · ${escapeHtml(displayPhone(o.customer.phone))}` : ''} · <button type="button" class="btn btn-link btn-sm p-0 align-baseline" data-open="${escapeHtml(o.ref)}">${escapeHtml(o.ref)}</button></p>
       </div>
     </div>`;
 }
 
 document.querySelector('[data-days]').addEventListener('change', async (e) => {
-  const row = e.target.closest('[data-ref]');
-  if (!row) return;
-  const isReady = e.target.checked;
-  row.classList.toggle('is-ready', isReady);
-  if (isReady) ready.add(row.dataset.ref);
-  else ready.delete(row.dataset.ref);
-  await setOrderReady(row.dataset.ref, isReady);
-  const day = due.find((o) => o.ref === row.dataset.ref).neededBy;
-  const list = due.filter((o) => o.neededBy === day);
-  document.querySelector(`[data-progress="${day}"]`).textContent = `${list.filter((o) => ready.has(o.ref)).length} of ${list.length} ready`;
+  const ref = e.target.dataset.ready;
+  if (!ref) return;
+  const ready = e.target.checked;
+  const order = await updateOrder(ref, { status: ready ? 'ready' : 'confirmed' }, ready ? 'Marked as ready' : 'Marked as not ready');
+  all = all.map((o) => (o.ref === ref ? order : o));
+  setBadges(all);
+  toast(ready ? 'Marked as ready' : 'Marked as not ready');
+  render();
+});
+
+document.querySelector('[data-days]').addEventListener('click', (e) => {
+  const ref = e.target.closest('[data-open]')?.dataset.open;
+  const order = ref && all.find((o) => o.ref === ref);
+  if (order) openOrderModal(order, { onChange: (o) => { all = all.map((x) => (x.ref === o.ref ? o : x)); setBadges(all); render(); } });
 });

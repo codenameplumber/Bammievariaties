@@ -1,204 +1,171 @@
-// Reports: one filter row (period, store) scopes everything below it. Headline
-// figures against the previous period, sales over time, channels, top products,
-// top customers for end-of-season gifts, a year in review, and a CSV download.
-import { money, escapeHtml, toast, copyText } from '../ui.js';
-import { getAdminOrders } from '../api.js';
+// Reports & profit: pick any dates (or a quick range) and a store, and see
+// revenue, cost of goods, profit and margin; a day-by-day chart; product
+// performance; channels and payment methods. Export to CSV or PDF.
+import { loadShop } from '../api.js';
 import { todayISO, addDays, formatDay, parseISODate } from '../dates.js';
-import { displayPhone } from '../customer.js';
+import { initShell, setBadges } from './shell.js';
+import { completedSales, dayOf, costFinder, profitSummary, productPerformance, groupTotals } from './stats.js';
 import {
-  sales, between, forStore, totals, change, dailySeries, monthlySeries, byChannel,
-  topProducts, topCustomers, uniqueCustomers, startOfWeek, dayOf, SERIES, CHANNELS,
-} from './stats.js';
-import { columnChart, barList } from './chart.js';
-import { initAdmin, deltaHtml, itemsSummary, timeOf, PAYMENT_LABEL, PAY_STATUS } from './admin-ui.js';
+  money, escapeHtml, dataTable, col, statCard, storeDot, storeName, CHANNEL, PAYMENT_METHOD, downloadCsv, downloadPdf, itemsSummary, dateTime,
+} from './common.js';
 
-initAdmin();
+initShell();
 
+const shop = await loadShop();
+setBadges(shop.orders);
+const costOf = costFinder(shop);
+const sales = completedSales(shop.orders);
 const today = todayISO();
-const year = Number(today.slice(0, 4));
-const daysInMonth = (y, m) => new Date(y, m, 0).getDate(); // m is 1-based
+const form = document.querySelector('[data-filters]');
 
-const PERIODS = {
-  week: { against: 'last week', range: () => [startOfWeek(today), today], previous: ([f, t]) => [addDays(f, -7), addDays(t, -7)] },
-  month: {
-    against: 'last month',
-    range: () => [`${today.slice(0, 8)}01`, today],
-    previous: () => {
-      const [y, m, d] = today.split('-').map(Number);
-      const py = m === 1 ? y - 1 : y;
-      const pm = m === 1 ? 12 : m - 1;
-      const ym = `${py}-${String(pm).padStart(2, '0')}`;
-      return [`${ym}-01`, `${ym}-${String(Math.min(d, daysInMonth(py, pm))).padStart(2, '0')}`];
-    },
-  },
-  '30d': { against: 'the 30 days before', range: () => [addDays(today, -29), today], previous: () => [addDays(today, -59), addDays(today, -30)] },
-  year: { against: 'this time last year', range: () => [`${year}-01-01`, today], previous: () => [`${year - 1}-01-01`, `${year - 1}${today.slice(4)}`] },
-};
+const startOfWeek = (iso) => addDays(iso, -((parseISODate(iso).getDay() + 6) % 7));
+const PRESETS = [
+  { id: 'today', label: 'Today', range: () => [today, today] },
+  { id: 'yesterday', label: 'Yesterday', range: () => [addDays(today, -1), addDays(today, -1)] },
+  { id: 'week', label: 'This week', range: () => [startOfWeek(today), today] },
+  { id: 'month', label: 'This month', range: () => [`${today.slice(0, 8)}01`, today] },
+  { id: 'last-month', label: 'Last month', range: () => { const end = addDays(`${today.slice(0, 8)}01`, -1); return [`${end.slice(0, 8)}01`, end]; } },
+  { id: '30', label: 'Last 30 days', range: () => [addDays(today, -29), today] },
+  { id: 'year', label: 'This year', range: () => [`${today.slice(0, 4)}-01-01`, today] },
+];
+let preset = 'month';
+let current = { from: '', to: '', store: 'all', orders: [] };
+let chart;
 
-const all = sales(await getAdminOrders());
-const filters = document.querySelector('[data-filters]');
-let period;
-let scope;
-let current = [];
+const perfTable = dataTable('#perfTable', {
+  data: [],
+  order: [[3, 'desc']],
+  columns: [
+    col((r) => `<div class="cell-main">${escapeHtml(r.name)}</div><div class="cell-sub">${escapeHtml(r.detail)}</div>`, (r) => `${r.name} ${r.detail}`, { responsivePriority: 1 }),
+    col((r) => `${storeDot(r.store)}${escapeHtml(storeName(r.store))}`, (r) => r.store),
+    col((r) => r.qty.toLocaleString('en-NG'), (r) => r.qty),
+    col((r) => money(r.revenue), (r) => r.revenue, { responsivePriority: 2 }),
+    col((r) => money(r.cost), (r) => r.cost),
+    col((r) => `<span class="fw-semibold ${r.profit < 0 ? 'text-danger' : 'text-success'}">${money(r.profit)}</span>`, (r) => r.profit, { responsivePriority: 2 }),
+    col((r) => `${r.margin}%`, (r) => r.margin),
+  ],
+});
 
-filters.addEventListener('change', render);
-document.querySelector('[data-csv]').addEventListener('click', downloadCsv);
-document.querySelector('[data-copy-gifts]').addEventListener('click', copyGiftList);
+form.querySelector('[data-presets]').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-preset]');
+  if (!btn) return;
+  preset = btn.dataset.preset;
+  const [from, to] = PRESETS.find((p) => p.id === preset).range();
+  form.elements.from.value = from;
+  form.elements.to.value = to;
+  run();
+});
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  preset = null;
+  run();
+});
+document.querySelectorAll('[data-export]').forEach((btn) => btn.addEventListener('click', () => exportReport(btn.dataset.export)));
 
-render();
+[form.elements.from.value, form.elements.to.value] = PRESETS.find((p) => p.id === preset).range();
+run();
 
-function render() {
-  // Read the filters from the page: browsers restore radio choices on reload and back.
-  period = filters.querySelector('input[name="period"]:checked').value;
-  scope = filters.querySelector('input[name="scope"]:checked').value;
-  const p = PERIODS[period];
-  const [from, to] = p.range();
-  const [pFrom, pTo] = p.previous([from, to]);
-  current = forStore(between(all, from, to), scope);
-  const before = forStore(between(all, pFrom, pTo), scope);
+function run() {
+  let { from, to } = { from: form.elements.from.value, to: form.elements.to.value };
+  if (!from || !to) return;
+  if (from > to) [from, to] = [to, from];
+  const store = form.elements.store.value;
+  const orders = sales.filter((o) => dayOf(o) >= from && dayOf(o) <= to && (store === 'all' || o.store === store));
+  current = { from, to, store, orders };
 
-  document.querySelector('[data-range-line]').textContent = `${formatDay(from)} to ${formatDay(to)}${scope === 'all' ? ', both stores' : `, ${SERIES.find((s) => s.id === scope).name} only`}`;
+  form.querySelector('[data-presets]').innerHTML = PRESETS.map((p) =>
+    `<button type="button" class="btn ${p.id === preset ? 'btn-primary' : 'btn-outline-primary'}" data-preset="${p.id}" aria-pressed="${p.id === preset}">${p.label}</button>`).join('');
+  document.querySelector('[data-range-line]').textContent = `${formatDay(from)} to ${formatDay(to)} · ${store === 'all' ? 'both stores' : storeName(store)}`;
 
-  renderKpis(current, before, p.against);
-  renderReview(period === 'year' ? current : null);
-  renderTime(from, to);
-  barList(document.querySelector('[data-channels]'), byChannel(current).map((r) => ({
-    name: r.name, value: r.total, note: `${r.count} orders · ${share(r.total, totals(current).total)}`,
-  })));
-  barList(document.querySelector('[data-products]'), topProducts(current, 8).map((r) => ({
-    name: r.name, detail: r.detail, value: r.total, note: `${r.qty} sold`,
-  })));
-  renderCustomers();
+  const s = profitSummary(orders, costOf);
+  document.querySelector('[data-kpis]').innerHTML = [
+    statCard({ icon: 'bi-cash-stack', tone: 'green', label: 'Revenue', value: money(s.revenue), sub: `${s.count} completed orders` }),
+    statCard({ icon: 'bi-basket', tone: 'blue', label: 'Cost of goods', value: money(s.cost), sub: 'From your cost prices' }),
+    statCard({ icon: 'bi-piggy-bank', tone: 'gold', label: 'Profit', value: `<span class="${s.profit < 0 ? 'text-danger' : ''}">${money(s.profit)}</span>`, sub: `${s.margin}% margin` }),
+    statCard({ icon: 'bi-receipt', tone: 'brown', label: 'Average order', value: money(s.count ? Math.round(s.revenue / s.count) : 0), sub: `${s.items.toLocaleString('en-NG')} items sold` }),
+  ].join('');
+
+  renderTrend(orders, from, to);
+  perfTable.clear().rows.add(productPerformance(orders, costOf)).draw();
+  renderGroup('[data-channels]', groupTotals(orders, (o) => o.channel), (k) => CHANNEL[k] ?? k, s.revenue);
+  renderGroup('[data-payments]', groupTotals(orders, (o) => o.payment?.method ?? 'unknown'), (k) => PAYMENT_METHOD[k] ?? 'Not recorded', s.revenue);
 }
 
-function renderKpis(now, before, against) {
-  const t = totals(now);
-  const b = totals(before);
-  const avg = (x) => (x.count ? Math.round(x.total / x.count) : 0);
-  const tiles = [
-    { label: 'Total sales', value: money(t.total), delta: change(t.total, b.total) },
-    { label: 'Orders', value: t.count.toLocaleString('en-NG'), delta: change(t.count, b.count) },
-    { label: 'Average order', value: money(avg(t)), delta: change(avg(t), avg(b)) },
-    { label: 'Customers served', value: uniqueCustomers(now).toLocaleString('en-NG'), delta: change(uniqueCustomers(now), uniqueCustomers(before)), sub: 'With a phone number' },
-  ];
-  document.querySelector('[data-kpis]').innerHTML = tiles.map((k) => `
-    <div class="tile">
-      <p class="tile__label">${k.label}</p>
-      <p class="tile__value">${k.value}</p>
-      ${k.sub ? `<p class="tile__sub">${k.sub}</p>` : ''}
-      ${deltaHtml(k.delta, against)}
-    </div>`).join('');
+function renderTrend(orders, from, to) {
+  const days = [];
+  for (let d = from; d <= to; d = addDays(d, 1)) days.push(d);
+  const monthly = days.length > 62;
+  const keyOf = (iso) => (monthly ? iso.slice(0, 7) : iso);
+  const keys = [...new Set(days.map(keyOf))];
+  const rows = new Map(keys.map((k) => [k, { revenue: 0, cost: 0 }]));
+  for (const o of orders) {
+    const row = rows.get(keyOf(dayOf(o)));
+    row.revenue += o.total;
+    row.cost += o.items.reduce((sum, i) => sum + costOf(o, i) * i.qty, 0);
+  }
+  const label = (k) => (monthly
+    ? new Date(`${k}-01T00:00:00`).toLocaleDateString('en-NG', { month: 'short', year: '2-digit' })
+    : parseISODate(k).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' }));
+  document.querySelector('[data-trend-note]').textContent = monthly ? 'Per month' : 'Per day';
+  const data = {
+    labels: keys.map(label),
+    datasets: [
+      { type: 'bar', label: 'Revenue', data: keys.map((k) => rows.get(k).revenue), backgroundColor: '#2A7A45', borderRadius: 4, borderSkipped: 'bottom', maxBarThickness: 24, order: 2 },
+      { type: 'line', label: 'Profit', data: keys.map((k) => rows.get(k).revenue - rows.get(k).cost), borderColor: '#D9A21B', backgroundColor: '#D9A21B', borderWidth: 2, pointRadius: keys.length > 40 ? 0 : 3, tension: 0.25, order: 1 },
+    ],
+  };
+  if (chart) {
+    chart.data = data;
+    chart.update();
+  } else {
+    chart = new Chart(document.getElementById('trendChart'), {
+      data,
+      options: {
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'start', labels: { boxWidth: 12, boxHeight: 12 } },
+          tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${money(c.raw)}` } },
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 12 } },
+          y: { beginAtZero: true, grid: { color: '#EEF1EF' }, ticks: { callback: (v) => (Math.abs(v) >= 1_000_000 ? `₦${(v / 1_000_000).toFixed(1)}M` : Math.abs(v) >= 1000 ? `₦${Math.round(v / 1000)}K` : `₦${v}`) } },
+        },
+      },
+    });
+  }
+  document.querySelector('[data-trend-table]').innerHTML = `
+    <table class="table table-sm small mb-0"><thead><tr><th>${monthly ? 'Month' : 'Day'}</th><th class="text-end">Revenue</th><th class="text-end">Cost</th><th class="text-end">Profit</th></tr></thead>
+    <tbody>${keys.map((k) => { const r = rows.get(k); return `<tr><td>${label(k)}</td><td class="text-end">${money(r.revenue)}</td><td class="text-end">${money(r.cost)}</td><td class="text-end">${money(r.revenue - r.cost)}</td></tr>`; }).join('')}</tbody></table>`;
 }
 
-function renderReview(orders) {
-  const box = document.querySelector('[data-review]');
-  box.hidden = !orders;
-  if (!orders) return;
-  document.querySelector('[data-review-title]').textContent = `${year} in review`;
-
-  const months = monthlySeries(orders, `${year}-01-01`, today).map((m) => ({ ...m, total: m.values.varieties + m.values.bake }));
-  const best = months.reduce((a, m) => (m.total > a.total ? m : a), months[0]);
-  const byWeekday = Array.from({ length: 7 }, () => 0);
-  for (const o of orders) byWeekday[parseISODate(dayOf(o)).getDay()] += o.total;
-  const busiest = byWeekday.indexOf(Math.max(...byWeekday));
-  const weekday = new Date(2026, 0, 4 + busiest).toLocaleDateString('en-NG', { weekday: 'long' }); // 4 Jan 2026 is a Sunday
-  const product = topProducts(orders, 1)[0];
-  const customer = topCustomers(orders, 1)[0];
-  const preorders = orders.filter((o) => o.store === 'bake').length;
-
-  const tiles = [
-    { label: 'Best month', value: monthName(best.key), sub: money(best.total) },
-    { label: 'Busiest day of the week', value: weekday, sub: `${money(byWeekday[busiest])} this year` },
-    { label: 'Top product', value: product ? `${product.name}` : '—', sub: product ? `${product.detail} · ${product.qty.toLocaleString('en-NG')} sold` : '' },
-    { label: 'Most loyal customer', value: customer?.name ?? '—', sub: customer ? `${customer.count} orders · ${money(customer.total)}` : '' },
-    { label: 'Customers served', value: uniqueCustomers(orders).toLocaleString('en-NG'), sub: 'With a phone number' },
-    { label: 'Bake & Cook pre-orders', value: preorders.toLocaleString('en-NG'), sub: 'Placed this year' },
-  ];
-  document.querySelector('[data-review-tiles]').innerHTML = tiles.map((k) => `
-    <div class="tile">
-      <p class="tile__label">${k.label}</p>
-      <p class="tile__value">${escapeHtml(k.value)}</p>
-      <p class="tile__sub">${escapeHtml(k.sub)}</p>
-    </div>`).join('');
+function renderGroup(selector, groups, name, total) {
+  document.querySelector(selector).innerHTML = groups.length ? `
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th></th><th class="text-end">Orders</th><th class="text-end">Revenue</th><th class="text-end">Share</th></tr></thead>
+      <tbody>${groups.map((g) => `
+        <tr>
+          <td>${escapeHtml(name(g.key))}<div class="progress mt-1" style="height:6px" role="presentation"><div class="progress-bar" style="width:${total ? Math.round((g.total / total) * 100) : 0}%;background:#2A7A45"></div></div></td>
+          <td class="text-end">${g.count}</td><td class="text-end">${money(g.total)}</td><td class="text-end">${total ? Math.round((g.total / total) * 100) : 0}%</td>
+        </tr>`).join('')}</tbody>
+    </table>` : '<p class="text-muted mb-0">No completed orders in these dates.</p>';
 }
 
-function renderTime(from, to) {
-  const series = scope === 'all' ? SERIES : SERIES.filter((s) => s.id === scope);
-  const monthly = period === 'year';
-  const rows = monthly ? monthlySeries(current, from, to) : dailySeries(current, from, to);
-  const columns = rows.map((r) => ({
-    label: monthly ? monthName(r.key) : formatDay(r.key),
-    short: monthly ? monthName(r.key, 'short') : period === 'week' ? parseISODate(r.key).toLocaleDateString('en-NG', { weekday: 'short' }) : String(Number(r.key.slice(8))),
-    values: r.values,
-  }));
-  document.querySelector('[data-time-note]').textContent = monthly ? 'Per month' : 'Per day';
-  columnChart(document.querySelector('[data-time-chart]'), {
-    columns,
-    series,
-    caption: `Sales ${monthly ? 'per month' : 'per day'}, ${formatDay(from)} to ${formatDay(to)}`,
-  });
-}
-
-function renderCustomers() {
-  const rows = topCustomers(current, 10);
-  const box = document.querySelector('[data-customers]');
-  document.querySelector('[data-copy-gifts]').hidden = !rows.length;
-  if (!rows.length) {
-    box.innerHTML = '<p class="panel__note">No customers with a phone number in this period.</p>';
+function exportReport(kind) {
+  const { from, to, store, orders } = current;
+  const s = profitSummary(orders, costOf);
+  const scope = store === 'all' ? 'both stores' : storeName(store);
+  if (kind === 'csv') {
+    downloadCsv(`bammie-report-${from}-to-${to}.csv`,
+      ['Order', 'Completed date', 'Store', 'Came in by', 'Customer', 'Items', 'Revenue', 'Cost', 'Profit', 'Paid by'],
+      orders.map((o) => {
+        const cost = o.items.reduce((sum, i) => sum + costOf(o, i) * i.qty, 0);
+        return [o.ref, dateTime(o.createdAt), storeName(o.store), CHANNEL[o.channel] ?? o.channel, o.customer?.name ?? 'Walk-in', itemsSummary(o, 99), o.total, cost, o.total - cost, PAYMENT_METHOD[o.payment?.method] ?? ''];
+      }));
     return;
   }
-  box.innerHTML = `
-    <table class="data-table">
-      <caption class="visually-hidden">Top customers by money spent</caption>
-      <thead><tr><th class="num">#</th><th>Customer</th><th>Phone</th><th class="num">Orders</th><th class="num">Spent</th><th>Last order</th></tr></thead>
-      <tbody>
-        ${rows.map((c, i) => `
-          <tr>
-            <td class="num">${i + 1}</td>
-            <th scope="row">${escapeHtml(c.name || 'No name')}</th>
-            <td>${escapeHtml(displayPhone(c.phone))}</td>
-            <td class="num">${c.count}</td>
-            <td class="num">${money(c.total)}</td>
-            <td>${formatDay(dayOf({ createdAt: c.last }))}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>`;
-}
-
-async function copyGiftList() {
-  const lines = topCustomers(current, 10).map((c, i) => `${i + 1}. ${c.name || 'No name'} — ${displayPhone(c.phone)} — ${money(c.total)} (${c.count} orders)`);
-  toast(await copyText(lines.join('\n')) ? 'Gift list copied.' : "Couldn't copy on this device.");
-}
-
-function downloadCsv() {
-  const [from, to] = PERIODS[period].range();
-  const header = ['Ref', 'Date', 'Time', 'Store', 'Channel', 'Customer', 'Phone', 'Items', 'Total (NGN)', 'Paid by', 'Payment', 'Needed on', 'Status'];
-  const rows = [...current].reverse().map((o) => [
-    o.ref, dayOf(o), timeOf(o.createdAt), SERIES.find((s) => s.id === o.store).name, CHANNELS[o.channel] ?? o.channel,
-    o.customer?.name ?? '', o.customer?.phone ? displayPhone(o.customer.phone) : '', itemsSummary(o, 99), o.total,
-    PAYMENT_LABEL[o.payment.method] ?? o.payment.method, PAY_STATUS[o.payment.status] ?? o.payment.status, o.neededBy ?? '', o.status,
-  ]);
-  const csv = [header, ...rows].map((r) => r.map(cell).join(',')).join('\r\n');
-  const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
-  const a = Object.assign(document.createElement('a'), { href: url, download: `bammie-orders-${from}-to-${to}${scope === 'all' ? '' : `-${scope}`}.csv` });
-  document.body.append(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-// Quote cells for spreadsheets; a leading = + - @ is neutralised so a name can't run as a formula.
-function cell(value) {
-  let s = String(value ?? '');
-  if (/^[=+\-@]/.test(s)) s = `'${s}`;
-  return /[",\r\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
-}
-
-function share(part, whole) {
-  return whole ? `${Math.round((part / whole) * 100)}%` : '0%';
-}
-
-function monthName(ym, style = 'long') {
-  const [y, m] = ym.split('-').map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString('en-NG', style === 'long' ? { month: 'long', year: 'numeric' } : { month: 'short' });
+  const rows = productPerformance(orders, costOf).map((r) => [`${r.name} (${r.detail})`, storeName(r.store), r.qty, money(r.revenue), money(r.cost), money(r.profit), `${r.margin}%`]);
+  downloadPdf(`bammie-report-${from}-to-${to}.pdf`, 'Bammie — sales and profit report', `${formatDay(from)} to ${formatDay(to)}, ${scope}`,
+    ['Product', 'Store', 'Sold', 'Revenue', 'Cost', 'Profit', 'Margin'], rows,
+    { summary: [`Revenue ${money(s.revenue)}   Cost of goods ${money(s.cost)}   Profit ${money(s.profit)} (${s.margin}%)`, `${s.count} completed orders, ${s.items} items sold`] });
 }

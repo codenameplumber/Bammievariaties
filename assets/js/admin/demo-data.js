@@ -1,14 +1,9 @@
-// Made-up sales for the owner-tools prototype. Two years of believable orders are
-// generated from the real catalogues (the same every time for a given day, so the
-// numbers don't jump on refresh), and any sale recorded on this phone with
-// "Record a sale" is added on top. No real customers or sales are in here; demo
-// phone numbers start with 0000, which no real line uses.
-import { read, write, remove } from '../storage.js';
+// Made-up order history for the admin demo: believable orders built from the real
+// catalogues, the same every time for a given day. Used once, by seed.js, to fill
+// the order book on the first visit to the admin. No real customers are in here;
+// demo phone numbers start with 0000, which no real line uses.
 import { toISODate, addDays, parseISODate } from '../dates.js';
 
-const SALES_KEY = 'bammie.demo.sales';
-const READY_KEY = 'bammie.demo.ready';
-const DAYS = 730;
 const AHEAD = 14; // pre-orders can be due up to two weeks out
 const WEBSITE_SINCE_DAYS = 60; // the website is new, so website orders only appear recently
 
@@ -83,7 +78,8 @@ const PICK = {
 };
 
 // ---- generation ----------------------------------------------------------------
-export function demoOrders({ varieties, bake }, now = new Date()) {
+export function generateDemoOrders({ varieties, bake }, now = new Date(), days = 120) {
+  const DAYS = days;
   const today = toISODate(now);
 
   // Calendar worked out once: ISO date, weekday and local midnight for every day used.
@@ -107,7 +103,7 @@ export function demoOrders({ varieties, bake }, now = new Date()) {
     const day = calendar[i];
     const back = DAYS - 1 - i;
     const rand = seeded(day.iso);
-    const growth = 0.7 + 0.5 * (1 - back / DAYS);
+    const growth = 0.95 + 0.25 * (1 - back / DAYS); // sales creep up over the period
     const season = day.month === 11 ? 1.4 : day.month === 3 ? 1.15 : 1;
     const early = back > WEBSITE_SINCE_DAYS;
     const ctx = {
@@ -127,8 +123,7 @@ export function demoOrders({ varieties, bake }, now = new Date()) {
   }
 
   const nowIso = now.toISOString();
-  const shown = orders.filter((o) => o.createdAt <= nowIso);
-  return [...shown, ...recordedSales()].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  return orders.filter((o) => o.createdAt <= nowIso);
 }
 
 function customerFor(ctx, regularChance) {
@@ -237,30 +232,4 @@ function bakeOrder(ctx) {
   };
   if (fulfilment === 'delivery') order.area = LANDMARKS[Math.floor(rand() * LANDMARKS.length)];
   return order;
-}
-
-// ---- things the owner does on this phone ---------------------------------------
-function recordedSales() {
-  const sales = read(SALES_KEY, []);
-  return Array.isArray(sales) ? sales.filter((s) => s && s.ref && s.createdAt && Array.isArray(s.items)) : [];
-}
-
-export function saveDemoSale(order) {
-  write(SALES_KEY, [...recordedSales(), order]);
-}
-
-export function readyRefs() {
-  return new Set(read(READY_KEY, []));
-}
-
-export function setReady(orderRef, ready) {
-  const refs = readyRefs();
-  if (ready) refs.add(orderRef);
-  else refs.delete(orderRef);
-  write(READY_KEY, [...refs]);
-}
-
-export function resetDemo() {
-  remove(SALES_KEY);
-  remove(READY_KEY);
 }

@@ -1,61 +1,62 @@
-// Record a sale: phone-first. Tap products, check the total, save. Cash and
-// walk-in are preselected, so a common shop sale is two taps (product, Save).
-// A Bake & Cook sale with a "needed on" date is a pre-order and goes on the
-// production list. Optional phone number links the sale to a customer.
+// Record a sale (shop counter or an order taken on WhatsApp/TikTok/phone):
+// tap products, check the total, save. Cash and walk-in are preselected, so a
+// common sale is two taps. A Bake & Cook sale with a "needed on" date becomes a
+// pre-order on the production list. Each line keeps its cost price for profit.
 import { BAKE } from '../config.js';
-import { money, icon, escapeHtml, toast } from '../ui.js';
-import { getCatalogue, getAdminOrders, recordSale } from '../api.js';
+import { loadShop, recordSale } from '../api.js';
+import { siteUrl } from '../ui.js';
+import { hydrateImages } from '../idb.js';
 import { normalisePhone } from '../customer.js';
 import { makeRef } from '../orders.js';
 import { todayISO } from '../dates.js';
-import { MAX_QTY } from '../cart.js';
-import { sales, between, totals, CHANNELS } from './stats.js';
-import { initAdmin, PAYMENT_LABEL } from './admin-ui.js';
+import { initShell, setBadges } from './shell.js';
+import { completedSales, dayOf } from './stats.js';
+import { money, escapeHtml, toast, PAYMENT_METHOD, CHANNEL, renderPills } from './common.js';
 
-initAdmin();
+initShell();
 
-const $ = (sel) => document.querySelector(sel);
-const form = $('[data-form]');
+const shop = await loadShop();
+setBadges(shop.orders);
 const today = todayISO();
+const $q = (sel) => document.querySelector(sel);
+const form = $q('[data-form]');
 
-const [varieties, bake, orders] = await Promise.all([getCatalogue('varieties'), getCatalogue('bake'), getAdminOrders()]);
-
-// What can be tapped, per store. Bake items are one tile per pack/size.
 const TILES = {
-  varieties: varieties.products.map((p) => ({ key: p.id, id: p.id, name: p.name, detail: p.unit, price: p.price, category: p.category, minQty: 1, sellable: p.inStock })),
-  bake: bake.products.flatMap((p) => p.options.map((o) => ({ key: `${p.id}:${o.id}`, id: p.id, option: o.id, name: p.name, detail: o.label, price: o.price, category: p.category, minQty: p.minQty ?? 1, sellable: p.available }))),
+  varieties: shop.varieties.products.map((p) => ({ key: p.id, id: p.id, name: p.name, detail: p.unit, price: p.price, cost: p.cost ?? 0, image: p.image, category: p.category, minQty: 1, sellable: p.inStock })),
+  bake: shop.bake.products.flatMap((p) => p.options.map((o) => ({ key: `${p.id}:${o.id}`, id: p.id, option: o.id, name: p.name, detail: o.label, price: o.price, cost: o.cost ?? 0, image: p.image, category: p.category, minQty: p.minQty ?? 1, sellable: p.available }))),
 };
-const CATEGORIES = { varieties: varieties.categories, bake: bake.categories };
+const CATEGORIES = { varieties: shop.varieties.categories, bake: shop.bake.categories };
 
-// Known customers, for the "regular customer" hint.
+// Known customers by phone, for the "regular customer" hint.
 const customers = new Map();
-for (const o of sales(orders)) {
+for (const o of shop.orders) {
   const phone = o.customer?.phone;
-  if (!phone) continue;
-  const c = customers.get(digits(phone)) ?? { phone, name: o.customer.name, count: 0, total: 0 };
+  if (!phone || o.type === 'request') continue;
+  const key = phoneKey(phone);
+  const c = customers.get(key) ?? { phone, name: o.customer.name, count: 0, total: 0 };
   c.count += 1;
   c.total += o.total;
-  customers.set(digits(phone), c);
+  customers.set(key, c);
 }
-let todaySoFar = totals(between(sales(orders), today, today));
 
+const todays = completedSales(shop.orders).filter((o) => dayOf(o) === today);
+let todaySoFar = { count: todays.length, total: todays.reduce((s, o) => s + o.total, 0) };
 let store = 'varieties';
 let category = 'all';
 let query = '';
-const sale = new Map(); // key → qty
+const sale = new Map(); // tile key → qty
 
 form.querySelector('[data-slots]').innerHTML = Object.entries(BAKE.timeSlots).map(([v, l]) => `<option value="${v}">${escapeHtml(l)}</option>`).join('');
 form.elements.neededBy.min = today;
 
 renderTodayLine();
-renderChips();
+renderCats();
 renderTiles();
 renderSale();
 
-// ---- events ----------------------------------------------------------------------
-document.querySelector('[role="radiogroup"][aria-label="Store"]').addEventListener('change', (e) => {
+// ---- events --------------------------------------------------------------------------
+document.querySelectorAll('input[name="store"]').forEach((r) => r.addEventListener('change', async (e) => {
   if (sale.size && !confirm('Start a new sale for the other store? The items in this sale will be cleared.')) {
-    e.target.checked = false;
     document.querySelector(`input[name="store"][value="${store}"]`).checked = true;
     return;
   }
@@ -63,93 +64,69 @@ document.querySelector('[role="radiogroup"][aria-label="Store"]').addEventListen
   category = 'all';
   sale.clear();
   form.querySelector('[data-bake-only]').hidden = store !== 'bake';
-  renderChips();
+  renderCats();
   renderTiles();
   renderSale();
+}));
+$q('[data-search]').addEventListener('input', (e) => { query = e.target.value.trim().toLowerCase(); renderTiles(); });
+$q('[data-cats]').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-filter]');
+  if (btn) { category = btn.dataset.filter; renderCats(); renderTiles(); }
 });
-
-$('[data-search]').addEventListener('input', (e) => {
-  query = e.target.value.trim().toLowerCase();
-  renderTiles();
-});
-
-$('[data-chips]').addEventListener('click', (e) => {
-  const chip = e.target.closest('[data-cat]');
-  if (!chip) return;
-  category = chip.dataset.cat;
-  renderChips();
-  renderTiles();
-});
-
-$('[data-tiles]').addEventListener('click', (e) => {
-  const tile = e.target.closest('[data-key]');
+$q('[data-tiles]').addEventListener('click', (e) => {
+  const tile = TILES[store].find((t) => t.key === e.target.closest('[data-key]')?.dataset.key);
   if (!tile) return;
-  const t = TILES[store].find((x) => x.key === tile.dataset.key);
-  sale.set(t.key, Math.min(MAX_QTY, (sale.get(t.key) ?? 0) + (sale.has(t.key) ? 1 : t.minQty)));
+  sale.set(tile.key, Math.min(999, (sale.get(tile.key) ?? 0) + (sale.has(tile.key) ? 1 : tile.minQty)));
   renderTiles();
   renderSale();
 });
-
-$('[data-lines]').addEventListener('click', (e) => {
-  const line = e.target.closest('[data-key]');
-  if (!line) return;
-  const t = TILES[store].find((x) => x.key === line.dataset.key);
-  const qty = sale.get(t.key);
-  if (e.target.closest('[data-inc]')) {
-    sale.set(t.key, Math.min(MAX_QTY, qty + 1));
-  } else if (e.target.closest('[data-dec]')) {
-    if (qty - 1 < t.minQty) sale.delete(t.key);
-    else sale.set(t.key, qty - 1);
-  } else if (e.target.closest('[data-remove]')) {
-    sale.delete(t.key);
-  } else {
-    return;
-  }
+$q('[data-lines]').addEventListener('click', (e) => {
+  const key = e.target.closest('[data-line]')?.dataset.line;
+  const tile = TILES[store].find((t) => t.key === key);
+  if (!tile) return;
+  const qty = sale.get(key);
+  if (e.target.closest('[data-inc]')) sale.set(key, Math.min(999, qty + 1));
+  else if (e.target.closest('[data-dec]')) { if (qty - 1 < tile.minQty) sale.delete(key); else sale.set(key, qty - 1); }
+  else if (e.target.closest('[data-remove]')) sale.delete(key);
+  else return;
   renderTiles();
   renderSale();
 });
-
-$('[data-clear]').addEventListener('click', () => {
-  sale.clear();
-  renderTiles();
-  renderSale();
-});
-
+$q('[data-clear]').addEventListener('click', () => { sale.clear(); renderTiles(); renderSale(); });
 form.addEventListener('change', (e) => {
   if (e.target.name === 'neededBy') form.querySelector('[data-pay-status]').hidden = !e.target.value;
   renderBar();
 });
-
 form.elements.phone.addEventListener('input', () => {
-  const match = customers.get(digits(form.elements.phone.value));
+  form.elements.phone.classList.remove('is-invalid');
+  const match = customers.get(phoneKey(form.elements.phone.value));
   const hint = form.querySelector('[data-regular]');
   hint.hidden = !match;
   if (match) {
-    hint.innerHTML = `${icon('users')}<span>Regular customer: <strong>${escapeHtml(match.name)}</strong> · ${match.count} orders · ${money(match.total)} spent</span>`;
+    hint.innerHTML = `<i class="bi bi-person-check me-1"></i>Regular customer: <strong>${escapeHtml(match.name)}</strong> · ${match.count} orders · ${money(match.total)} spent`;
     if (!form.elements.customer.value) form.elements.customer.value = match.name;
   }
-  hideError('phone');
 });
-
-$('[data-bar-save]').addEventListener('click', () => form.requestSubmit());
+$q('[data-bar-save]').addEventListener('click', () => form.requestSubmit());
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const lines = saleLines();
   if (!lines.length) return;
-
-  const phoneRaw = form.elements.phone.value.trim();
-  const known = customers.get(digits(phoneRaw));
-  const phone = phoneRaw ? known?.phone ?? normalisePhone(phoneRaw) : null;
-  if (phoneRaw && !phone) {
-    showError('phone', 'Enter a Nigerian number, e.g. 0803 123 4567, or leave it empty.');
+  const raw = form.elements.phone.value.trim();
+  const known = customers.get(phoneKey(raw));
+  const phone = raw ? known?.phone ?? normalisePhone(raw) : null;
+  if (raw && !phone) {
+    form.elements.phone.classList.add('is-invalid');
+    form.elements.phone.focus();
     return;
   }
   const neededBy = store === 'bake' ? form.elements.neededBy.value : '';
   if (neededBy && neededBy < today) {
-    showError('neededBy', "Pick today or a later date (or leave it empty if they've taken it).");
+    form.elements.neededBy.classList.add('is-invalid');
     return;
   }
+  form.elements.neededBy.classList.remove('is-invalid');
 
   const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
   const channel = form.elements.channel.value;
@@ -160,7 +137,7 @@ form.addEventListener('submit', async (e) => {
     channel,
     createdAt: new Date().toISOString(),
     customer: { name: form.elements.customer.value.trim() || null, phone },
-    items: lines.map((l) => ({ id: l.id, name: l.name, unit: l.detail, ...(l.option && { option: l.option }), price: l.price, qty: l.qty })),
+    items: lines.map((l) => ({ id: l.id, name: l.name, unit: l.detail, ...(l.option && { option: l.option }), price: l.price, cost: l.cost, qty: l.qty })),
     subtotal: total,
     deliveryFee: 0,
     total,
@@ -170,11 +147,16 @@ form.addEventListener('submit', async (e) => {
     status: neededBy ? 'confirmed' : 'completed',
     recorded: true,
   };
-
-  await recordSale(order);
-  todaySoFar = { count: todaySoFar.count + 1, total: todaySoFar.total + total };
-  toast(`Saved ${order.ref} · ${money(total)}${neededBy ? ' · added to the production list' : ''}`);
-
+  try {
+    await recordSale(order);
+  } catch (err) {
+    toast(err.message, 'danger');
+    return;
+  }
+  if (!neededBy) todaySoFar = { count: todaySoFar.count + 1, total: todaySoFar.total + total };
+  shop.orders.unshift(order);
+  setBadges(shop.orders);
+  toast(`Saved ${order.ref} · ${money(total)}${neededBy ? ' · on the production list' : ''}`);
   sale.clear();
   form.reset();
   form.querySelector('[data-regular]').hidden = true;
@@ -184,33 +166,42 @@ form.addEventListener('submit', async (e) => {
   renderSale();
 });
 
-// ---- rendering -------------------------------------------------------------------
+// ---- rendering ------------------------------------------------------------------------
 function renderTodayLine() {
-  $('[data-today-line]').innerHTML = todaySoFar.count
-    ? `Today so far: <strong>${money(todaySoFar.total)}</strong> from ${todaySoFar.count} ${todaySoFar.count === 1 ? 'sale' : 'sales'}. <a href="./">See the dashboard</a>`
+  $q('[data-today-line]').innerHTML = todaySoFar.count
+    ? `Today so far: <strong>${money(todaySoFar.total)}</strong> from ${todaySoFar.count} completed ${todaySoFar.count === 1 ? 'sale' : 'sales'}.`
     : 'Tap what was sold, then save. Cash and walk-in are already selected.';
 }
 
-function renderChips() {
-  $('[data-chips]').innerHTML = [{ id: 'all', name: 'All' }, ...CATEGORIES[store]]
-    .map((c) => `<button type="button" class="chip" data-cat="${escapeHtml(c.id)}" aria-pressed="${c.id === category}">${escapeHtml(c.name)}</button>`)
-    .join('');
+function renderCats() {
+  const filters = [{ id: 'all', label: 'All', test: () => true }, ...CATEGORIES[store].map((c) => ({ id: c.id, label: c.name, test: (t) => t.category === c.id }))];
+  renderPills($q('[data-cats]'), filters, category, TILES[store]);
+}
+
+function tileImage(t) {
+  if (!t.image) return '<span class="ph"><i class="bi bi-image"></i></span>';
+  return t.image.startsWith('idb:')
+    ? `<img data-idb-src="${escapeHtml(t.image.slice(4))}" alt="">`
+    : `<img src="${siteUrl(t.image)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`;
 }
 
 function renderTiles() {
-  const shown = TILES[store].filter((t) => (category === 'all' || t.category === category)
-    && (!query || `${t.name} ${t.detail}`.toLowerCase().includes(query)));
-  $('[data-tiles]').innerHTML = shown.length ? shown.map((t) => {
+  const shown = TILES[store].filter((t) => (category === 'all' || t.category === category) && (!query || `${t.name} ${t.detail}`.toLowerCase().includes(query)));
+  $q('[data-tiles]').innerHTML = shown.length ? shown.map((t) => {
     const qty = sale.get(t.key) ?? 0;
     return `
-      <button type="button" class="pos-tile${qty ? ' is-picked' : ''}" data-key="${escapeHtml(t.key)}" ${t.sellable ? '' : 'disabled'}
+      <button type="button" class="pos-tile${qty ? ' picked' : ''}" data-key="${escapeHtml(t.key)}" ${t.sellable ? '' : 'disabled'}
         aria-label="Add ${escapeHtml(t.name)} (${escapeHtml(t.detail)}), ${money(t.price)}${qty ? `, ${qty} in this sale` : ''}">
-        <span class="pos-tile__name">${escapeHtml(t.name)}</span>
-        <span class="pos-tile__detail">${escapeHtml(t.detail)}${t.sellable ? '' : ' · out of stock'}</span>
-        <span class="pos-tile__price">${money(t.price)}</span>
-        ${qty ? `<span class="count-badge">${qty}</span>` : ''}
+        ${tileImage(t)}
+        ${qty ? `<span class="qty-badge">${qty}</span>` : ''}
+        <span class="body">
+          <span class="name">${escapeHtml(t.name)}</span>
+          <span class="detail">${escapeHtml(t.detail)}${t.sellable ? '' : ' · out of stock'}</span>
+          <span class="price">${money(t.price)}</span>
+        </span>
       </button>`;
-  }).join('') : '<p class="panel__note">No products match.</p>';
+  }).join('') : '<p class="text-muted">No products match.</p>';
+  hydrateImages($q('[data-tiles]'));
 }
 
 function saleLines() {
@@ -220,57 +211,37 @@ function saleLines() {
 function renderSale() {
   const lines = saleLines();
   const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
-  $('[data-empty]').hidden = lines.length > 0;
-  $('[data-clear]').hidden = !lines.length;
-  $('[data-total-row]').hidden = !lines.length;
-  $('[data-total]').textContent = money(total);
+  $q('[data-empty]').hidden = lines.length > 0;
+  $q('[data-clear]').hidden = !lines.length;
+  $q('[data-total-row]').hidden = !lines.length;
+  $q('[data-total]').textContent = money(total);
   form.querySelector('[data-save]').disabled = !lines.length;
-  $('[data-lines]').innerHTML = lines.map((l) => `
-    <li class="sale-line" data-key="${escapeHtml(l.key)}">
-      <div>
-        <p class="sale-line__name">${escapeHtml(l.name)}</p>
-        <p class="sale-line__detail">${escapeHtml(l.detail)} · ${money(l.price)} each</p>
+  $q('[data-lines]').innerHTML = lines.map((l) => `
+    <div class="sale-line" data-line="${escapeHtml(l.key)}">
+      <div><div class="fw-semibold">${escapeHtml(l.name)}</div><div class="cell-sub">${escapeHtml(l.detail)} · ${money(l.price)} each</div></div>
+      <div class="fw-bold text-end">${money(l.price * l.qty)}</div>
+      <div class="btn-group btn-group-sm" role="group" aria-label="Quantity of ${escapeHtml(l.name)}">
+        <button type="button" class="btn btn-outline-primary" data-dec aria-label="One fewer"><i class="bi bi-dash-lg"></i></button>
+        <span class="btn btn-outline-primary disabled fw-bold" aria-live="polite">${l.qty}</span>
+        <button type="button" class="btn btn-outline-primary" data-inc aria-label="One more"><i class="bi bi-plus-lg"></i></button>
       </div>
-      <p class="sale-line__total">${money(l.price * l.qty)}</p>
-      <div class="qty" role="group" aria-label="Quantity of ${escapeHtml(l.name)} (${escapeHtml(l.detail)})">
-        <button type="button" data-dec aria-label="One fewer">${icon('minus')}</button>
-        <output aria-live="polite">${l.qty}</output>
-        <button type="button" data-inc aria-label="One more" ${l.qty >= MAX_QTY ? 'disabled' : ''}>${icon('plus')}</button>
-      </div>
-      <button type="button" class="link-btn" data-remove aria-label="Remove ${escapeHtml(l.name)}">${icon('trash')}Remove</button>
-    </li>`).join('');
+      <button type="button" class="btn btn-link btn-sm text-danger text-end p-0" data-remove>Remove</button>
+    </div>`).join('');
   renderBar();
 }
 
 function renderBar() {
   const lines = saleLines();
   const count = lines.reduce((n, l) => n + l.qty, 0);
-  const bar = $('[data-sale-bar]');
+  const bar = $q('[data-sale-bar]');
   bar.hidden = !count;
   document.body.classList.toggle('has-sale-bar', count > 0);
   if (!count) return;
-  $('[data-bar-total]').textContent = `${count} ${count === 1 ? 'item' : 'items'} · ${money(lines.reduce((s, l) => s + l.price * l.qty, 0))}`;
+  $q('[data-bar-total]').textContent = `${count} ${count === 1 ? 'item' : 'items'} · ${money(lines.reduce((s, l) => s + l.price * l.qty, 0))}`;
   const pre = store === 'bake' && form.elements.neededBy.value ? ' · pre-order' : '';
-  $('[data-bar-meta]').textContent = `${PAYMENT_LABEL[form.elements.method.value]} · ${CHANNELS[form.elements.channel.value]}${pre}`;
+  $q('[data-bar-meta]').textContent = `${PAYMENT_METHOD[form.elements.method.value]} · ${CHANNEL[form.elements.channel.value]}${pre}`;
 }
 
-function showError(name, message) {
-  const field = form.querySelector(`[data-field="${name}"]`);
-  field.classList.add('is-invalid');
-  const err = field.querySelector('.field__error');
-  err.textContent = message;
-  err.hidden = false;
-  field.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  field.querySelector('input').focus({ preventScroll: true });
-}
-
-function hideError(name) {
-  const field = form.querySelector(`[data-field="${name}"]`);
-  field.classList.remove('is-invalid');
-  field.querySelector('.field__error').hidden = true;
-}
-
-function digits(value) {
-  const n = normalisePhone(value);
-  return n ?? String(value ?? '').replace(/\D/g, '');
+function phoneKey(value) {
+  return normalisePhone(value) ?? String(value ?? '').replace(/\D/g, '');
 }

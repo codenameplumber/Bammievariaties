@@ -29,6 +29,59 @@ export function dayOf(order) {
 }
 
 export const sales = (orders) => orders.filter((o) => o.type !== 'request' && Number.isFinite(o.total));
+
+// Money only counts once an order is completed (walk-in sales are completed at once).
+export const completedSales = (orders) => sales(orders).filter((o) => o.status === 'completed');
+
+// What one item cost Bammie: the cost saved with the sale, else today's cost price.
+export function costFinder({ varieties, bake }) {
+  const costs = new Map();
+  for (const p of varieties.products) costs.set(`varieties:${p.id}`, p.cost ?? 0);
+  for (const p of bake.products) for (const o of p.options) costs.set(`bake:${p.id}:${o.id}`, o.cost ?? 0);
+  return (order, item) => item.cost ?? costs.get(order.store === 'bake' ? `bake:${item.id}:${item.option}` : `varieties:${item.id}`) ?? 0;
+}
+
+export function profitSummary(orders, costOf) {
+  let revenue = 0;
+  let cost = 0;
+  let items = 0;
+  for (const o of orders) {
+    revenue += o.total;
+    for (const i of o.items) {
+      cost += costOf(o, i) * i.qty;
+      items += i.qty;
+    }
+  }
+  return { revenue, cost, profit: revenue - cost, margin: revenue ? Math.round(((revenue - cost) / revenue) * 100) : 0, count: orders.length, items };
+}
+
+export function productPerformance(orders, costOf) {
+  const map = new Map();
+  for (const o of orders) {
+    for (const i of o.items) {
+      const key = `${o.store}:${i.id}:${i.option ?? ''}`;
+      const row = map.get(key) ?? { key, store: o.store, name: i.name, detail: i.unit ?? '', qty: 0, revenue: 0, cost: 0 };
+      row.qty += i.qty;
+      row.revenue += i.price * i.qty;
+      row.cost += costOf(o, i) * i.qty;
+      map.set(key, row);
+    }
+  }
+  return [...map.values()].map((r) => ({ ...r, profit: r.revenue - r.cost, margin: r.revenue ? Math.round(((r.revenue - r.cost) / r.revenue) * 100) : 0 }))
+    .sort((a, b) => b.revenue - a.revenue);
+}
+
+export function groupTotals(orders, keyOf) {
+  const map = new Map();
+  for (const o of orders) {
+    const key = keyOf(o);
+    const row = map.get(key) ?? { key, count: 0, total: 0 };
+    row.count += 1;
+    row.total += o.total;
+    map.set(key, row);
+  }
+  return [...map.values()].sort((a, b) => b.total - a.total);
+}
 export const between = (orders, from, to) => orders.filter((o) => { const d = dayOf(o); return d >= from && d <= to; });
 export const forStore = (orders, store) => (store === 'all' ? orders : orders.filter((o) => o.store === store));
 

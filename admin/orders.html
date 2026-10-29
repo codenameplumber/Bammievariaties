@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en-NG">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Store orders | Bammie admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0F3D22">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="../assets/img/brand/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/img/brand/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script type="module" src="../assets/js/admin/orders.js"></script>
+</head>
+<body data-page="orders">
+  <main class="main-content" id="main">
+    <div class="page-head">
+      <div>
+        <h1>Store orders</h1>
+        <p>Varieties Store orders from the website, WhatsApp, TikTok, phone calls and the shop.</p>
+      </div>
+      <div class="page-actions">
+        <a class="btn btn-primary" href="record-sale.html"><i class="bi bi-plus-lg me-1"></i>Record a sale</a>
+        <div class="btn-group">
+          <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-download me-1"></i>Export</button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button type="button" class="dropdown-item" data-export="csv"><i class="bi bi-filetype-csv me-2"></i>CSV for Excel</button></li>
+            <li><button type="button" class="dropdown-item" data-export="pdf"><i class="bi bi-filetype-pdf me-2"></i>PDF</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="demo-note" role="note"><i class="bi bi-info-circle fs-5"></i><span>Demo mode. Orders placed on the website <strong>in this browser</strong> show up here straight away. Orders from customers' own phones will show up once the backend is connected.</span></div>
+    <div class="row g-3 mb-3" data-stats></div>
+    <section class="table-panel" aria-label="Store orders">
+      <div class="filter-bar">
+        <div class="filter-pills" role="group" aria-label="Show orders" data-status-filter></div>
+        <div class="d-flex flex-wrap align-items-center gap-2 ms-lg-auto small">
+          <label class="text-muted" for="ordersFrom">Placed from</label>
+          <input type="date" class="form-control form-control-sm w-auto" id="ordersFrom" data-from>
+          <label class="text-muted" for="ordersTo">to</label>
+          <input type="date" class="form-control form-control-sm w-auto" id="ordersTo" data-to>
+          <button type="button" class="btn btn-sm btn-link" data-clear-dates>Clear</button>
+        </div>
+      </div>
+      <table id="ordersTable" class="table table-hover align-middle">
+        <thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Came in by</th><th><span class="visually-hidden">Open</span></th></tr></thead>
+      </table>
+    </section>
+  </main>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</body>
+</html>

@@ -51,9 +51,11 @@ flowchart TD
   AD[admin/ — owner, demo data in Phase 1]
   AD --> D1[index.html Dashboard]
   AD --> D2[record-sale.html]
-  AD --> D3[orders.html]
-  AD --> D4[preorders.html Production list]
+  AD --> D3[orders.html Store orders]
+  AD --> D4[preorders.html Pre-orders & quotes]
+  AD --> D9[production.html]
   AD --> D5[products.html]
+  AD --> D10[bake-menu.html]
   AD --> D6[customers.html]
   AD --> D7[reports.html]
   AD --> D8[settings.html]
@@ -63,7 +65,7 @@ flowchart TD
 
 | Page | Purpose | Key parts |
 |---|---|---|
-| `index.html` | Home — the **two doors** | Brand hero · two big store cards ("Shop everyday needs" / "Pre-order treats") · this week's batch teaser · Bammie Chips strip · how ordering works (3 steps) · visit our shop · WhatsApp + TikTok |
+| `index.html` | Home — the **two doors** | **Photo carousel** (5 slides: foodstuffs, Bammie Chips, snacks, cakes, party food; autoplay with pause, swipe, arrows, dots) · promise bar · two photo-backed store cards · this week's batch teaser · **Popular in the shop** with Add buttons · Bammie Chips band with photos and live prices · **Fresh from the kitchen** picks · occasion quote card · how ordering works · visit our shop |
 | `varieties/index.html` | Daily store catalogue | Category tabs (Foodstuffs · Provisions · Stationery · Bammie Chips · More) · search · product cards with **qty stepper right on the card**, no product page needed · in-stock badge · sticky cart bar. `?item=<id>` scrolls to and highlights an item, for share links |
 | `varieties/cart.html` | Varieties cart | Lines, qty edit, subtotal, "delivery fee confirmed on WhatsApp" or zone fee |
 | `varieties/checkout.html` | Details + fulfilment | Name, phone (WhatsApp), **Delivery / I'll pick up / I'll send my rider**, address + area (delivery only), preferred time, payment (transfer / pay on pickup / pay on delivery), note. Pre-filled from remembered details |
@@ -79,68 +81,48 @@ flowchart TD
 
 ### Owner pages (`admin/`)
 
-Phase 1 builds these as a **clickable prototype with clearly fake demo data**. They have a
-"DEMO" banner, `noindex`, are blocked in `robots.txt`, and are not linked from the public
-site. Real login and real data come with the backend, because a GitHub Pages site **cannot
-keep a secret**.
-
-**Built (Phase 1, step 6)** — phone-first with a bottom tab bar; "Add to home screen" via
-`admin/manifest.webmanifest`:
+Rebuilt after the owner's feedback, modelled on the `codenameplumber/omasweet` admin:
+**Bootstrap 5** with a fixed **side menu** (slides in from a ☰ button on phones), and every
+list in a **DataTable** (search, sort, paging, responsive rows). `noindex`, blocked in
+`robots.txt`, not linked from the shop. "Add to home screen" via `admin/manifest.webmanifest`.
 
 | Page | Purpose |
 |---|---|
-| `index.html` | **Today so far** vs the same day last week by this time · split **Varieties in the shop / Varieties online / Bake & Cook** · last-7-days chart · pre-orders due today and tomorrow · latest sales |
-| `record-sale.html` | Tap products → check total → save. Cash and walk-in preselected, so a common sale is **2 taps**. Payment (cash / transfer / POS), channel (walk-in / WhatsApp / TikTok / call), optional phone (recognises regulars). Bake & Cook with a "needed on" date = pre-order on the production list |
-| `preorders.html` | **Production list**: next 7 days, one card per day: what to make (totals per item and pack), then each order with slot, payment, delivery/pickup, cake message and a **Ready** tick · print |
-| `reports.html` | Filters (this week / month / 30 days / year × store) scope everything: totals vs the previous period, sales over time, channels, top products, **top customers** (copy gift list), **year in review**, CSV download |
+| `index.html` Dashboard | Today and this month: revenue, cost, profit, orders · 14-day chart by store · pre-orders due today/tomorrow · "Needs your attention" table |
+| `record-sale.html` | Photo tiles → sale lines → payment and channel. Saves a **cost snapshot** per item. Bake & Cook sales with a "needed on" date go on the production list |
+| `orders.html` Store orders | All Varieties orders. Filters: Open / Pending / Not paid / Completed / Cancelled / All, placed-date range. Order window: **Confirm**, **Confirm full payment** (paid by cash/transfer/POS), **Mark as completed**, cancel, reopen, undo payment, private note, WhatsApp the customer, full history |
+| `preorders.html` Pre-orders & quotes | Bake & Cook pre-orders (confirm → ready → collected/delivered, deposit or full payment) and occasion requests (send quote → booked/declined), due-date range |
+| `production.html` | Next 7 days: what to make per day, each order with slot and a Ready tick, print |
+| `products.html` | Varieties products: add/edit/delete, **cost price + selling price** with live margin, photo upload (compressed to WebP, kept in IndexedDB), category (or new one), in stock, show on home page |
+| `bake-menu.html` | Menu items with packs (label, price, cost), days' notice, minimum, cake message allowed, available; **weekly batch** editor |
+| `customers.html` | Customers ranked by completed spend, their orders, copy top-10 gift list |
+| `reports.html` | **Any date range** (presets or custom from/to) × store (both / Varieties / Bake & Cook): revenue, cost, profit, margin, average order, revenue/profit chart, product performance, channels, payment methods · CSV and PDF |
+| `settings.html` | WhatsApp number orders go to (with a test link), two phone lines, email, TikTok, **bank account** (bank, name, 10-digit number), address, area, hours, map link, deposit %, occasion notice days, **pause either store**, reset demo data |
 
-**Demo data:** generated in the browser by `assets/js/admin/demo-data.js` from the real
-catalogues: two years of orders, the same each time for a given day, with made-up names
-and `0000` phone numbers. Sales recorded on the phone are added on top
-(`bammie.demo.sales`); "Reset demo" clears them. Everything goes through `api.js`
-(`getAdminOrders`, `recordSale`, `setOrderReady`), so Phase 2 swaps in the real backend.
+**Order states.** Varieties: `new → confirmed → completed` (or `cancelled`). Bake & Cook:
+`requested → confirmed → ready → completed`. Occasion requests: `requested → quoted →
+booked` (or `declined`). Payment: `unpaid / deposit / paid`, with the method. Every change
+appends `{ at, note }` to the order's `history`.
+
+**Revenue and profit** count completed orders only. Cost is the item's `cost` snapshot when
+the sale was recorded, otherwise the product's current cost price.
+
+**Phase 1 storage** (`assets/js/db.js`, `assets/js/idb.js`): `bammie.db.products.varieties`,
+`bammie.db.products.bake`, `bammie.db.batch`, `bammie.db.orders`, `bammie.db.settings`,
+`bammie.db.seeded` in localStorage; uploaded photos in IndexedDB (`image: "idb:<key>"`).
+The shop reads the same keys, so in one browser the admin and shop are fully connected:
+website orders appear in the admin, and settings, prices, photos and paused stores show on
+the shop. Orders from customers' own phones, and edits every visitor sees, need Phase 2.
+
+**Demo data:** the first admin visit copies the catalogues in with demo cost prices
+(`admin/seed.js`) and generates ~4 months of made-up orders (`admin/demo-data.js`, fake
+names, `0000` phone numbers, `demo: true`).
 
 **Chart colours:** green `#2A7A45` (Varieties) and gold `#D9A21B` (Bake & Cook), checked with
-the colour-blindness validator. Brand brown fails that check against green. Every chart has a
-legend, keyboard-reachable tooltips and a "Show as table" view.
+the colour-blindness validator. Brand brown fails that check against green.
 
-**Phase 2, with the backend** (they need real data or a login): `login.html`, `orders.html`
-(all orders, change status), `products.html` (prices, stock, photos, weekly batch),
-`customers.html` (full customer list), `settings.html` (business info, delivery fees, bank
-details, deposit, time slots).
-
----
-
-## 3. Order flows
-
-```mermaid
-flowchart LR
-  subgraph Daily["Varieties — daily store"]
-    a1[Browse] --> a2[Add to cart] --> a3[Checkout:<br/>delivery / pickup / own rider] --> a4[order.html] --> a5[Send on WhatsApp]
-  end
-  subgraph Pre["Bake & Cook — pre-order store"]
-    b1[Batch or menu] --> b2[Pick options] --> b3[Checkout:<br/>needed-by date] --> b4[order.html] --> b5[Send on WhatsApp]
-    b6[Custom occasion form] --> b4
-  end
-```
-
-**Status flows** (Phase 2, but the data model carries them from day one):
-
-- Varieties: `new → packed → out-for-delivery | ready-for-pickup → completed` (or `cancelled`)
-- Bake & Cook: `requested → confirmed (deposit paid) → preparing → ready → completed` (or `cancelled`)
-
-**WhatsApp message** (built by `orders.js`, sent via `https://wa.me/234XXXXXXXXXX?text=…`):
-
-```
-Hello Bammie! New order BV-261027-4F7K
-Store: Varieties Store
-• 2 × Mama Gold Rice 5kg — ₦19,000
-• 1 × Plantain Chips (big) — ₦1,500
-Subtotal: ₦20,500
-Fulfilment: I'll send my rider
-Name: Ada Okafor · 0803 000 0000
-Note: Please pack the chips separately
-```
+**Phase 2, with the backend:** `login.html` and real accounts; the same pages read and write
+the server through `api.js`.
 
 ---
 
@@ -163,8 +145,9 @@ BammieV/
 │   ├── custom-order.html
 │   ├── cart.html
 │   └── checkout.html
-├── admin/                      # prototype, demo data only in Phase 1
-│   ├── index.html  record-sale.html  preorders.html  reports.html
+├── admin/                      # Bootstrap admin; browser storage + demo data in Phase 1
+│   ├── index.html  record-sale.html  orders.html  preorders.html  production.html
+│   ├── products.html  bake-menu.html  customers.html  reports.html  settings.html
 │   └── manifest.webmanifest    # "Add to home screen" for the owner's phone
 ├── assets/
 │   ├── css/
@@ -182,17 +165,23 @@ BammieV/
 │   │   ├── form.js             # inline form errors shared by the checkouts and occasion form
 │   │   ├── cart-bar.js         # sticky "n items · ₦total" bar
 │   │   ├── bake-form.js        # time-slot, occasion and "what would you like" choices
-│   │   ├── api.js              # THE seam: reads /data/*.json now, calls the backend in Phase 2
+│   │   ├── api.js              # THE seam: data files + browser storage now, the backend in Phase 2
+│   │   ├── db.js               # Phase 1 "database": catalogues, batch, orders, settings in localStorage
+│   │   ├── idb.js              # uploaded product photos in IndexedDB, compressed to WebP
+│   │   ├── settings.js         # WhatsApp number, phones, bank, address, hours, store open/paused
 │   │   ├── cart.js             # two carts: bammie.cart.varieties / bammie.cart.bake
 │   │   ├── customer.js         # remembered details: name, phone, address, area, fulfilment
 │   │   ├── orders.js           # ref generator, local order history, WhatsApp message builder
 │   │   ├── ui.js               # header, cart badges, toasts, ₦ formatting, date helpers
 │   │   ├── pages/              # one small module per page (home.js, varieties.js, bake.js, …)
-│   │   └── admin/              # demo-data.js, stats.js, chart.js, admin-ui.js + one script per page
+│   │   └── admin/              # shell.js (side menu), common.js (badges, DataTables, CSV/PDF),
+│   │                           # order-modal.js, stats.js, seed.js, demo-data.js + one script per page
 │   └── img/
-│       ├── brand/              # logo SVGs, favicon, social share image
-│       ├── shop/               # real shop photos
-│       └── products/           # WebP, ~600px, named by product id
+│       ├── brand/              # flyer, favicon, app icons
+│       ├── hero/               # home carousel slides, 1600×800 WebP
+│       ├── doors/              # store card backgrounds, 1200×800 WebP
+│       ├── products/           # WebP, 800×600, named by product id
+│       └── CREDITS.md          # source and licence of every stock photo
 ├── data/
 │   ├── varieties-products.json
 │   ├── bake-menu.json

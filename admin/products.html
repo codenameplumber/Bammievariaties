@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en-NG">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Products & prices | Bammie admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0F3D22">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="../assets/img/brand/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/img/brand/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script type="module" src="../assets/js/admin/products.js"></script>
+</head>
+<body data-page="products">
+  <main class="main-content" id="main">
+    <div class="page-head">
+      <div>
+        <h1>Products &amp; prices</h1>
+        <p>Everything in the Varieties Store. Cost price is only for you: customers see the selling price.</p>
+      </div>
+      <div class="page-actions">
+        <button type="button" class="btn btn-primary" data-add><i class="bi bi-plus-lg me-1"></i>Add product</button>
+        <button type="button" class="btn btn-outline-primary" data-export="csv"><i class="bi bi-download me-1"></i>Export</button>
+      </div>
+    </div>
+    <div class="row g-3 mb-3" data-stats></div>
+    <section class="table-panel" aria-label="Products">
+      <div class="filter-bar"><div class="filter-pills" role="group" aria-label="Category" data-cat-filter></div></div>
+      <table id="productsTable" class="table table-hover align-middle">
+        <thead><tr><th>Photo</th><th>Product</th><th>Category</th><th>Cost price</th><th>Selling price</th><th>Profit per item</th><th>In stock</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+      </table>
+    </section>
+  </main>
+  <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+      <form class="modal-content" novalidate data-product-form>
+        <div class="modal-header"><h2 class="modal-title h5" id="productModalTitle">Add product</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-5">
+              <label class="form-label" for="photoInput">Photo</label>
+              <label class="photo-drop" for="photoInput" data-photo-preview><span><i class="bi bi-camera fs-2 d-block"></i>Tap to add a photo</span></label>
+              <input type="file" class="visually-hidden" id="photoInput" accept="image/*" data-photo>
+              <button type="button" class="btn btn-link btn-sm text-danger p-0 mt-1" data-photo-remove hidden>Remove photo</button>
+            </div>
+            <div class="col-md-7">
+              <div class="mb-3"><label class="form-label" for="pName">Product name</label><input class="form-control" id="pName" name="name" required maxlength="80"><div class="invalid-feedback">Enter the product name.</div></div>
+              <div class="mb-3"><label class="form-label" for="pUnit">Size / pack</label><input class="form-control" id="pUnit" name="unit" required maxlength="40" placeholder="e.g. 5kg bag, 1 derica, Pack of 12"><div class="invalid-feedback">Enter the size or pack.</div></div>
+              <div class="mb-3">
+                <label class="form-label" for="pCategory">Category</label>
+                <select class="form-select" id="pCategory" name="category" data-category-select></select>
+                <input class="form-control mt-2" name="newCategory" placeholder="New category name" maxlength="40" hidden data-new-category>
+                <div class="invalid-feedback">Enter the new category name.</div>
+              </div>
+              <div class="row g-2 mb-1">
+                <div class="col-6"><label class="form-label" for="pCost">Cost price (₦)</label><input class="form-control" id="pCost" name="cost" type="number" min="0" step="50" required><div class="invalid-feedback">Enter what it costs you.</div></div>
+                <div class="col-6"><label class="form-label" for="pPrice">Selling price (₦)</label><input class="form-control" id="pPrice" name="price" type="number" min="0" step="50" required><div class="invalid-feedback">Enter the selling price.</div></div>
+              </div>
+              <p class="margin-hint mb-3" data-margin></p>
+              <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" role="switch" id="pStock" name="inStock" checked><label class="form-check-label" for="pStock">In stock</label></div>
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="pFeatured" name="featured"><label class="form-check-label" for="pFeatured">Show on the home page</label></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save product</button></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+</body>
+</html>

@@ -1,7 +1,8 @@
 // Order confirmation (order.html?ref=…), shared by both stores and by occasion
 // requests. Step 2 of 2: nothing reaches Bammie until the customer sends the
 // WhatsApp message.
-import { BUSINESS, BAKE } from '../config.js';
+import { BUSINESS } from '../config.js';
+import { getSettings, hasBankDetails } from '../settings.js';
 import { initPage, money, icon, escapeHtml, siteUrl, toast, copyText, whatsappUrl } from '../ui.js';
 import { displayPhone } from '../customer.js';
 import { getLocalOrder, markSent, whatsappMessage, whatsappOrderUrl, neededByText, FULFILMENT, PAYMENT } from '../orders.js';
@@ -132,12 +133,12 @@ function requestCard() {
         ${r.budget ? `<dt>Budget</dt><dd>${escapeHtml(r.budget)}</dd>` : ''}
         ${r.details ? `<dt>Details</dt><dd>${escapeHtml(r.details)}</dd>` : ''}
       </dl>
-      <p class="summary__note card__after">No payment now. Bammie will send a quote${BAKE.depositPercent ? `, and a ${BAKE.depositPercent}% deposit secures your date` : ''}.</p>
+      <p class="summary__note card__after">No payment now. Bammie will send a quote${getSettings().depositPercent ? `, and a ${getSettings().depositPercent}% deposit secures your date` : ''}.</p>
     </section>`;
 }
 
 function paymentCard() {
-  const bank = BUSINESS.bank;
+  const bank = hasBankDetails() ? getSettings().bank : null;
   const deposit = order.deposit ? ` A deposit of <strong>${money(order.deposit)}</strong> secures your date.` : '';
   return `
     <section class="card" aria-labelledby="pay-title">

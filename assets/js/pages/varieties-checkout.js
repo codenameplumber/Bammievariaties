@@ -1,7 +1,7 @@
 // Varieties Store checkout: details, fulfilment (delivery / pickup / own rider),
 // payment, remembered details. Saves the order and moves on to order.html,
 // where the customer sends it to Bammie on WhatsApp.
-import { initPage, money, icon, escapeHtml, siteUrl } from '../ui.js';
+import { initPage, money, icon, escapeHtml, siteUrl, storeIsOpen } from '../ui.js';
 import { getCatalogue, placeOrder } from '../api.js';
 import { getLines, clearCart } from '../cart.js';
 import { resolveLines } from '../lines.js';
@@ -62,6 +62,7 @@ async function main() {
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
   status.hidden = true;
   form.hidden = false;
+  if (!storeIsOpen(STORE)) form.querySelector('[data-submit]').disabled = true; // paused in Settings
 
   form.querySelector('[data-summary-items]').innerHTML = items
     .map((i) => `<li><span>${i.qty} × ${escapeHtml(i.name)} <span class="muted">(${escapeHtml(i.unit)})</span></span><span>${money(i.price * i.qty)}</span></li>`)

@@ -1,6 +1,8 @@
 // Shared page helpers: links that work at any folder depth, ₦ formatting,
-// icons, toasts, cart badges, and contact details filled in from config.js.
+// icons, toasts, cart badges, and contact details filled in from the owner's
+// settings (Admin → Settings).
 import { BUSINESS, PREVIEW } from './config.js';
+import { getSettings } from './settings.js';
 import { cartCount } from './cart.js';
 import { displayPhone } from './customer.js';
 
@@ -22,16 +24,19 @@ export function icon(name, className = '') {
   return `<svg class="icon ${className}" aria-hidden="true"><use href="${siteUrl('assets/img/icons.svg')}#${name}"></use></svg>`;
 }
 
-// Product photo, or the category's placeholder tile until real photos arrive.
+// Product photo over the category's placeholder tile; if the photo is missing the
+// tile shows through. Photos uploaded in the admin are "idb:<key>" (see idb.js).
 export function productThumb(product, iconName = 'basket') {
   const cls = `thumb thumb--${escapeHtml(product.category)}`;
-  return product.image
-    ? `<div class="${cls}"><img src="${siteUrl(product.image)}" alt="" loading="lazy" width="400" height="300"></div>`
-    : `<div class="${cls}">${icon(iconName)}</div>`;
+  const img = !product.image ? ''
+    : product.image.startsWith('idb:')
+      ? `<img data-idb-src="${escapeHtml(product.image.slice(4))}" alt="">`
+      : `<img src="${siteUrl(product.image)}" alt="" loading="lazy" width="800" height="600" onerror="this.remove()">`;
+  return `<div class="${cls}">${icon(iconName)}${img}</div>`;
 }
 
 export function whatsappUrl(text = '') {
-  return `https://wa.me/${BUSINESS.whatsapp}` + (text ? `?text=${encodeURIComponent(text)}` : '');
+  return `https://wa.me/${getSettings().whatsapp}` + (text ? `?text=${encodeURIComponent(text)}` : '');
 }
 
 export function toast(message) {
@@ -72,19 +77,20 @@ export function refreshCartBadges() {
 }
 
 function contactItems() {
+  const s = getSettings();
   const items = [
-    `<li><a href="${whatsappUrl()}" target="_blank" rel="noopener">${icon('whatsapp')}<span>Chat on WhatsApp<br><small>${displayPhone(BUSINESS.whatsapp)}</small></span></a></li>`,
-    ...BUSINESS.phones.map((p) =>
-      `<li><a href="tel:${p.number}">${icon('phone')}<span>${displayPhone(p.number)}<br><small>${escapeHtml(p.network)} line</small></span></a></li>`),
+    `<li><a href="${whatsappUrl()}" target="_blank" rel="noopener">${icon('whatsapp')}<span>Chat on WhatsApp<br><small>${displayPhone(s.whatsapp)}</small></span></a></li>`,
+    ...s.phones.filter((p) => p.number).map((p) =>
+      `<li><a href="tel:${escapeHtml(p.number)}">${icon('phone')}<span>${displayPhone(p.number)}<br><small>${escapeHtml(p.network)} line</small></span></a></li>`),
   ];
-  if (BUSINESS.tiktok) {
-    items.push(`<li><a href="https://www.tiktok.com/@${encodeURIComponent(BUSINESS.tiktok)}" target="_blank" rel="noopener">${icon('tiktok')}<span>@${escapeHtml(BUSINESS.tiktok)}<br><small>TikTok</small></span></a></li>`);
+  if (s.tiktok) {
+    items.push(`<li><a href="https://www.tiktok.com/@${encodeURIComponent(s.tiktok)}" target="_blank" rel="noopener">${icon('tiktok')}<span>@${escapeHtml(s.tiktok)}<br><small>TikTok</small></span></a></li>`);
   }
-  if (BUSINESS.email) {
-    items.push(`<li><a href="mailto:${escapeHtml(BUSINESS.email)}">${icon('mail')}<span>${escapeHtml(BUSINESS.email)}</span></a></li>`);
+  if (s.email) {
+    items.push(`<li><a href="mailto:${escapeHtml(s.email)}">${icon('mail')}<span>${escapeHtml(s.email)}</span></a></li>`);
   }
-  if (BUSINESS.address) {
-    items.push(`<li><span>${icon('map-pin')}<span>${escapeHtml(BUSINESS.address)}${BUSINESS.area ? `<br><small>${escapeHtml(BUSINESS.area)}</small>` : ''}</span></span></li>`);
+  if (s.address) {
+    items.push(`<li><span>${icon('map-pin')}<span>${escapeHtml(s.address)}${s.area ? `<br><small>${escapeHtml(s.area)}</small>` : ''}</span></span></li>`);
   }
   return items.join('');
 }
@@ -93,25 +99,47 @@ function contactItems() {
 function renderVisit() {
   const list = document.querySelector('[data-visit-list]');
   if (!list) return;
-  const items = [BUSINESS.address
-    ? `<li>${icon('map-pin')}<span><strong>${escapeHtml(BUSINESS.address)}</strong>${BUSINESS.area ? `<small>${escapeHtml(BUSINESS.area)}</small>` : ''}</span></li>`
+  const s = getSettings();
+  const items = [s.address
+    ? `<li>${icon('map-pin')}<span><strong>${escapeHtml(s.address)}</strong>${s.area ? `<small>${escapeHtml(s.area)}</small>` : ''}</span></li>`
     : `<li>${icon('map-pin')}<span><strong>Our shop</strong><small>Call or WhatsApp us for directions</small></span></li>`];
-  if (BUSINESS.hours?.length) {
-    const rows = BUSINESS.hours.map((h) => `${escapeHtml(h.days)}: ${escapeHtml(h.time)}`).join('<br>');
-    items.push(`<li>${icon('clock')}<span><strong>Opening hours</strong><small>${rows}</small></span></li>`);
+  if (s.hours) {
+    items.push(`<li>${icon('clock')}<span><strong>Opening hours</strong><small>${escapeHtml(s.hours)}</small></span></li>`);
   }
-  for (const p of BUSINESS.phones) {
-    items.push(`<li>${icon('phone')}<span><a href="tel:${p.number}">${displayPhone(p.number)}</a><small>${escapeHtml(p.network)} line</small></span></li>`);
+  for (const p of s.phones.filter((x) => x.number)) {
+    items.push(`<li>${icon('phone')}<span><a href="tel:${escapeHtml(p.number)}">${displayPhone(p.number)}</a><small>${escapeHtml(p.network)} line</small></span></li>`);
   }
   list.innerHTML = items.join('');
 
   const map = document.querySelector('[data-map-link]');
-  if (map && BUSINESS.mapUrl) {
-    map.href = BUSINESS.mapUrl;
+  if (map && s.mapUrl) {
+    map.href = s.mapUrl;
     map.target = '_blank';
     map.rel = 'noopener';
     map.hidden = false;
   }
+}
+
+export const storeIsOpen = (store) => getSettings().open[store] !== false;
+
+// When the owner pauses a store in Settings, say so at the top of its pages.
+function showStoreStatus() {
+  const store = document.body.dataset.store;
+  if (!store || storeIsOpen(store)) return;
+  const name = BUSINESS.stores[store].name;
+  const bar = document.createElement('div');
+  bar.className = 'closed-bar';
+  bar.innerHTML = `${icon('info')}<span>${escapeHtml(name)} isn't taking online orders right now. <a href="${whatsappUrl(`Hello Bammie! I'd like to order from ${name}.`)}" target="_blank" rel="noopener">Chat with us on WhatsApp</a>.</span>`;
+  document.querySelector('main')?.prepend(bar);
+}
+
+// Admin-uploaded photos (idb:) load from IndexedDB once they're on the page.
+function watchUploadedImages() {
+  const hydrate = () => {
+    if (document.querySelector('img[data-idb-src]')) import('./idb.js').then((m) => m.hydrateImages());
+  };
+  hydrate();
+  new MutationObserver(hydrate).observe(document.body, { childList: true, subtree: true });
 }
 
 // Call once per page, before page-specific rendering.
@@ -126,6 +154,8 @@ export function initPage() {
 
   document.querySelectorAll('[data-contact-list]').forEach((el) => { el.innerHTML = contactItems(); });
   renderVisit();
+  showStoreStatus();
+  watchUploadedImages();
   document.querySelectorAll('[data-year]').forEach((el) => { el.textContent = new Date().getFullYear(); });
 
   refreshCartBadges();

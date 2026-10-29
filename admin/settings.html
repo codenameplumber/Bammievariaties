@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en-NG">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings | Bammie admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0F3D22">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="../assets/img/brand/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/img/brand/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script type="module" src="../assets/js/admin/settings.js"></script>
+</head>
+<body data-page="settings">
+  <main class="main-content" id="main">
+    <div class="page-head">
+      <div>
+        <h1>Settings</h1>
+        <p>Your WhatsApp number, phone lines, bank account and shop details. The website uses these straight away.</p>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-xl-6">
+        <form class="card-panel" novalidate data-form="status">
+          <h2 class="mb-1">Taking orders</h2>
+          <p class="small text-muted">Switch a store off to pause online orders (for a holiday, or when you're fully booked).</p>
+          <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" role="switch" id="openV" name="openVarieties"><label class="form-check-label" for="openV">Varieties Store is taking orders</label></div>
+          <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" role="switch" id="openB" name="openBake"><label class="form-check-label" for="openB">Bake &amp; Cook is taking pre-orders</label></div>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+        <form class="card-panel" novalidate data-form="contact">
+          <h2 class="mb-1">WhatsApp &amp; phone</h2>
+          <p class="small text-muted">Every order from the website is sent to this WhatsApp number.</p>
+          <div class="mb-3">
+            <label class="form-label" for="sWhatsapp">WhatsApp number for orders</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-whatsapp"></i></span>
+              <input class="form-control" id="sWhatsapp" name="whatsapp" type="tel" inputmode="tel" required placeholder="0810 821 2867">
+              <a class="btn btn-outline-primary" target="_blank" rel="noopener" data-test-wa>Test</a>
+              <div class="invalid-feedback">Enter a Nigerian mobile number.</div>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-7"><label class="form-label" for="sPhone1">Phone line 1</label><input class="form-control" id="sPhone1" name="phone1" type="tel" inputmode="tel"><div class="invalid-feedback">Enter a Nigerian number or leave it empty.</div></div>
+            <div class="col-5"><label class="form-label" for="sNet1">Network</label><select class="form-select" id="sNet1" name="net1" data-networks></select></div>
+            <div class="col-7"><label class="form-label" for="sPhone2">Phone line 2</label><input class="form-control" id="sPhone2" name="phone2" type="tel" inputmode="tel"><div class="invalid-feedback">Enter a Nigerian number or leave it empty.</div></div>
+            <div class="col-5"><label class="form-label" for="sNet2">Network</label><select class="form-select" id="sNet2" name="net2" data-networks></select></div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-sm-6"><label class="form-label" for="sEmail">Email</label><input class="form-control" id="sEmail" name="email" type="email"><div class="invalid-feedback">Check the email address.</div></div>
+            <div class="col-sm-6"><label class="form-label" for="sTiktok">TikTok handle</label><div class="input-group"><span class="input-group-text">@</span><input class="form-control" id="sTiktok" name="tiktok" maxlength="40"></div></div>
+          </div>
+          <button type="submit" class="btn btn-primary">Save contact details</button>
+        </form>
+      </div>
+      <div class="col-xl-6">
+        <form class="card-panel" novalidate data-form="bank">
+          <h2 class="mb-1">Bank account</h2>
+          <p class="small text-muted">Shown to customers who pay by transfer, after they place an order.</p>
+          <div class="mb-3"><label class="form-label" for="sBank">Bank</label><select class="form-select" id="sBank" name="bank" data-banks></select></div>
+          <div class="mb-3"><label class="form-label" for="sAccName">Account name</label><input class="form-control" id="sAccName" name="accountName" maxlength="80"></div>
+          <div class="mb-3"><label class="form-label" for="sAccNo">Account number</label><input class="form-control" id="sAccNo" name="accountNumber" inputmode="numeric" maxlength="10"><div class="invalid-feedback">Account numbers are 10 digits.</div></div>
+          <button type="submit" class="btn btn-primary">Save bank details</button>
+        </form>
+        <form class="card-panel" novalidate data-form="shop">
+          <h2 class="mb-1">Shop location &amp; hours</h2>
+          <div class="mb-3"><label class="form-label" for="sAddress">Address</label><input class="form-control" id="sAddress" name="address" maxlength="120"></div>
+          <div class="row g-2 mb-3">
+            <div class="col-sm-6"><label class="form-label" for="sArea">Area / city</label><input class="form-control" id="sArea" name="area" maxlength="60"></div>
+            <div class="col-sm-6"><label class="form-label" for="sHours">Opening hours</label><input class="form-control" id="sHours" name="hours" maxlength="80" placeholder="Mon – Sat, 8am – 8pm"></div>
+          </div>
+          <div class="mb-3"><label class="form-label" for="sMap">Google Maps link</label><input class="form-control" id="sMap" name="mapUrl" type="url" placeholder="https://maps.app.goo.gl/…"><div class="invalid-feedback">Paste a link starting with https://</div></div>
+          <button type="submit" class="btn btn-primary">Save shop details</button>
+        </form>
+        <form class="card-panel" novalidate data-form="rules">
+          <h2 class="mb-1">Pre-order rules</h2>
+          <div class="row g-2 mb-3">
+            <div class="col-sm-6"><label class="form-label" for="sDeposit">Deposit to secure a date (%)</label><input class="form-control" id="sDeposit" name="depositPercent" type="number" min="0" max="100"><div class="form-text">0 means no deposit.</div><div class="invalid-feedback">0 to 100.</div></div>
+            <div class="col-sm-6"><label class="form-label" for="sLead">Notice for occasions (days)</label><input class="form-control" id="sLead" name="occasionLeadDays" type="number" min="0" max="60"><div class="invalid-feedback">0 to 60 days.</div></div>
+          </div>
+          <button type="submit" class="btn btn-primary">Save rules</button>
+        </form>
+        <section class="card-panel border-danger-subtle">
+          <h2 class="mb-1 text-danger">Demo data</h2>
+          <p class="small text-muted">Start the demo again: removes your product edits, uploaded photos, recorded sales and the demo orders in this browser, then loads fresh demo data. Settings are kept.</p>
+          <button type="button" class="btn btn-outline-danger" data-reset>Reset demo data</button>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+</body>
+</html>

@@ -2,7 +2,8 @@
 // set by the item that needs the most notice; batch items fix the date to the
 // batch's ready day. Saves the order and moves on to order.html → WhatsApp.
 import { BAKE } from '../config.js';
-import { initPage, money, icon, escapeHtml, siteUrl } from '../ui.js';
+import { getSettings } from '../settings.js';
+import { initPage, money, icon, escapeHtml, siteUrl, storeIsOpen } from '../ui.js';
 import { getCatalogue, placeOrder } from '../api.js';
 import { getLines, clearCart } from '../cart.js';
 import { resolveLines, noticeText } from '../lines.js';
@@ -57,7 +58,7 @@ async function main() {
     qty: r.qty,
   }));
   const subtotal = rows.reduce((sum, r) => sum + r.total, 0);
-  const deposit = BAKE.depositPercent ? Math.round((subtotal * BAKE.depositPercent) / 100) : null;
+  const deposit = getSettings().depositPercent ? Math.round((subtotal * getSettings().depositPercent) / 100) : null;
 
   // Date rules
   const today = todayISO();
@@ -70,13 +71,14 @@ async function main() {
 
   status.hidden = true;
   form.hidden = false;
+  if (!storeIsOpen(STORE)) form.querySelector('[data-submit]').disabled = true; // paused in Settings
 
   form.querySelector('[data-summary-items]').innerHTML = rows
     .map((r) => `<li><span>${r.qty} × ${escapeHtml(r.name)} <span class="muted">(${escapeHtml(r.detail)})</span></span><span>${money(r.total)}</span></li>`)
     .join('');
   form.querySelector('[data-subtotal]').textContent = money(subtotal);
   form.querySelector('[data-total]').textContent = money(subtotal);
-  form.querySelector('[data-pay-note]').innerHTML = `${icon('info')}<span>Pay by bank transfer after Bammie confirms your pre-order.${deposit ? ` A ${BAKE.depositPercent}% deposit (${money(deposit)}) secures your date.` : ''}</span>`;
+  form.querySelector('[data-pay-note]').innerHTML = `${icon('info')}<span>Pay by bank transfer after Bammie confirms your pre-order.${deposit ? ` A ${getSettings().depositPercent}% deposit (${money(deposit)}) secures your date.` : ''}</span>`;
 
   form.querySelector('[data-slots]').innerHTML = timeSlotChoices();
   form.querySelector('[data-occasions]').insertAdjacentHTML('beforeend', occasionOptions());

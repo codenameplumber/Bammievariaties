@@ -15,14 +15,14 @@
   --brown-100: #F1E2D8;
   --brown-50: #F8EFE9;
 
-  --cream-50: #FFF8E9;
-  --cream-100: #FBF0D9;
+  --cream-50: #FFFFFF;
+  --cream-100: #F2F6F3;
   --white: #FFFFFF;
 
   --ink: #1F1B16;
-  --muted: #625A4E;
-  --line: #E7DCC6;
-  --line-strong: #D9CCB2;
+  --muted: #59625B;
+  --line: #E2E8E4;
+  --line-strong: #C9D3CC;
   --danger: #B3261E;
   --danger-50: #FCEDEC;
   --whatsapp: #157A43; /* darker than WhatsApp's own green so white text passes contrast */

@@ -3,111 +3,82 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Reports | Bammie owner tools</title>
+  <title>Reports & profit | Bammie admin</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#1E5631">
+  <meta name="theme-color" content="#0F3D22">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="../assets/img/brand/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../assets/img/brand/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="../assets/css/tokens.css">
-  <link rel="stylesheet" href="../assets/css/base.css">
-  <link rel="stylesheet" href="../assets/css/layout.css">
-  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
   <link rel="stylesheet" href="../assets/css/admin.css">
   <script type="module" src="../assets/js/admin/reports.js"></script>
 </head>
-<body class="admin">
-  <a class="skip-link" href="#main">Skip to content</a>
-  <div class="demo-bar"><strong>Demo</strong> Made-up orders and customers, to show how Bammie's tools will work. Sales you record stay on this phone. <button type="button" class="link-btn" data-reset-demo>Reset demo</button></div>
-
-  <header class="admin-header">
-    <div class="container admin-header__row">
-      <a class="brand" href="./" aria-label="Owner tools dashboard">
-        <span class="brand__name">Bammie<svg class="brand__crown" aria-hidden="true"><use href="../assets/img/icons.svg#crown"/></svg></span>
-        <span class="brand__sub">Owner tools</span>
-      </a>
-      <nav class="admin-nav" aria-label="Owner tools">
-        <a href="./"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#grid"/></svg>Dashboard</a>
-        <a href="record-sale.html"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#plus-circle"/></svg>Record sale</a>
-        <a href="preorders.html"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#cake"/></svg>Production</a>
-        <a href="reports.html" aria-current="page"><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#chart"/></svg>Reports</a>
-      </nav>
-      <a class="link-btn admin-header__shop" href="../" target="_blank" rel="noopener">View shop<svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#external"/></svg></a>
-    </div>
-  </header>
-
-  <main id="main" class="container admin-main">
-    <div class="admin-head">
+<body data-page="reports">
+  <main class="main-content" id="main">
+    <div class="page-head">
       <div>
-        <h1>Reports</h1>
-        <p data-range-line>How Bammie is doing, by store, channel, product and customer.</p>
+        <h1>Reports &amp; profit</h1>
+        <p data-range-line>Pick any dates and a store to see revenue, cost and profit.</p>
       </div>
-      <div class="admin-head__actions">
-        <button type="button" class="btn btn--outline btn--sm" data-csv><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#download"/></svg>Download CSV</button>
-      </div>
-    </div>
-
-    <div class="filters" data-filters>
-      <div class="segmented segmented--wrap" role="radiogroup" aria-label="Period">
-        <label><input type="radio" name="period" value="week"><span>This week</span></label>
-        <label><input type="radio" name="period" value="month" checked><span>This month</span></label>
-        <label><input type="radio" name="period" value="30d"><span>30 days</span></label>
-        <label><input type="radio" name="period" value="year"><span>This year</span></label>
-      </div>
-      <div class="segmented" role="radiogroup" aria-label="Store">
-        <label><input type="radio" name="scope" value="all" checked><span>Both stores</span></label>
-        <label><input type="radio" name="scope" value="varieties"><span>Varieties</span></label>
-        <label><input type="radio" name="scope" value="bake"><span>Bake &amp; Cook</span></label>
+      <div class="page-actions">
+        <div class="btn-group">
+          <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-download me-1"></i>Export</button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button type="button" class="dropdown-item" data-export="csv"><i class="bi bi-filetype-csv me-2"></i>CSV for Excel</button></li>
+            <li><button type="button" class="dropdown-item" data-export="pdf"><i class="bi bi-filetype-pdf me-2"></i>PDF</button></li>
+          </ul>
+        </div>
       </div>
     </div>
-
-    <div class="tiles tiles--4" data-kpis><p class="loading">Adding it all up…</p></div>
-
-    <section class="panel" aria-labelledby="review-title" data-review hidden>
-      <div class="panel__head">
-        <h2 id="review-title" data-review-title>Year in review</h2>
-        <p>The highlights so far this year</p>
+    <form class="card-panel mb-3" data-filters>
+      <div class="filter-pills mb-2" role="group" aria-label="Quick dates" data-presets></div>
+      <div class="row g-2 align-items-end">
+        <div class="col-6 col-md-3"><label class="form-label" for="rFrom">From</label><input class="form-control" type="date" id="rFrom" name="from" required></div>
+        <div class="col-6 col-md-3"><label class="form-label" for="rTo">To</label><input class="form-control" type="date" id="rTo" name="to" required></div>
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="rStore">Store</label>
+          <select class="form-select" id="rStore" name="store">
+            <option value="all">Both stores</option>
+            <option value="varieties">Varieties Store</option>
+            <option value="bake">Bake &amp; Cook</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Show report</button></div>
       </div>
-      <div class="tiles" data-review-tiles></div>
+    </form>
+    <div class="row g-3 mb-3" data-kpis></div>
+    <section class="card-panel mb-3" aria-labelledby="trendTitle">
+      <div class="panel-head"><h2 id="trendTitle">Revenue and profit</h2><span class="small text-muted" data-trend-note></span></div>
+      <div class="chart-box"><canvas id="trendChart" role="img" aria-label="Revenue and profit over the selected dates"></canvas></div>
+      <details class="mt-2"><summary class="small">Show as table</summary><div class="table-responsive" data-trend-table></div></details>
     </section>
-
-    <div class="admin-grid">
-      <section class="panel span-2" aria-labelledby="time-title">
-        <div class="panel__head">
-          <h2 id="time-title">Sales over time</h2>
-          <p data-time-note></p>
-        </div>
-        <div data-time-chart></div>
-      </section>
-
-      <section class="panel" aria-labelledby="channel-title">
-        <div class="panel__head">
-          <h2 id="channel-title">Where orders come from</h2>
-          <p>Sales by channel</p>
-        </div>
-        <div data-channels></div>
-      </section>
-
-      <section class="panel" aria-labelledby="products-title">
-        <div class="panel__head">
-          <h2 id="products-title">Top products</h2>
-          <p>By money taken</p>
-        </div>
-        <div data-products></div>
-      </section>
-
-      <section class="panel span-2" aria-labelledby="customers-title">
-        <div class="panel__head">
-          <h2 id="customers-title">Top customers</h2>
-          <p>For end-of-season gifts. Matched by phone number; sales with no number aren't counted.</p>
-        </div>
-        <div class="table-scroll" data-customers></div>
-        <button type="button" class="btn btn--outline btn--sm card__after" data-copy-gifts><svg class="icon" aria-hidden="true"><use href="../assets/img/icons.svg#copy"/></svg>Copy gift list</button>
-      </section>
+    <section class="table-panel mb-3" aria-labelledby="productsTitle">
+      <div class="panel-head"><h2 id="productsTitle" class="h5">Product performance</h2><span class="small text-muted">Quantity sold, revenue, cost and profit per product</span></div>
+      <table id="perfTable" class="table table-hover align-middle">
+        <thead><tr><th>Product</th><th>Store</th><th>Sold</th><th>Revenue</th><th>Cost</th><th>Profit</th><th>Margin</th></tr></thead>
+      </table>
+    </section>
+    <div class="row g-3">
+      <div class="col-lg-6"><section class="card-panel h-100" aria-labelledby="channelTitle"><h2 id="channelTitle" class="mb-3">Where orders came from</h2><div class="table-responsive" data-channels></div></section></div>
+      <div class="col-lg-6"><section class="card-panel h-100" aria-labelledby="payTitle"><h2 id="payTitle" class="mb-3">How customers paid</h2><div class="table-responsive" data-payments></div></section></div>
     </div>
+    <p class="small text-muted mt-3">Revenue counts completed orders only; cancelled and open orders are left out. Cost uses the cost price saved with each sale, or the product's current cost price. Delivery fees agreed on WhatsApp aren't included.</p>
   </main>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>

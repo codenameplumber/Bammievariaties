@@ -41,7 +41,8 @@ async function main() {
   renderMenu();
   initCartBar(STORE, data, 'Pick a date next');
 
-  if (location.hash === '#batch') document.getElementById('batch')?.scrollIntoView();
+  // The menu is drawn after load, so jump to #batch or #cat-cakes ourselves.
+  if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
 
   els.batch.addEventListener('click', (e) => {
     const button = e.target.closest('button');

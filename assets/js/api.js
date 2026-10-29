@@ -1,8 +1,16 @@
 // The one seam between the pages and where data lives.
-// Phase 1: catalogues come from /data/*.json and orders stay on the customer's
-// phone (they reach Bammie through WhatsApp). Phase 2 swaps these bodies for
-// calls to API_BASE; nothing else in the site has to change.
+// Phase 1: product lists come from /data/*.json until the owner edits them in the
+// admin, and the order book, settings and edits are kept in this browser (db.js,
+// settings.js). Phase 2 swaps these bodies for calls to the backend; the pages
+// don't change.
 import { saveLocalOrder } from './orders.js';
+import {
+  storedCatalogue, saveCatalogue, storedBatch, saveBatch, listOrders, addOrder,
+  updateOrder as updateStoredOrder, saveOrders, isSeeded, markSeeded, clearShopData,
+} from './db.js';
+import { getSettings, saveSettings as storeSettings } from './settings.js';
+
+export { getSettings };
 
 const DATA = new URL('../../data/', import.meta.url);
 const cache = new Map();
@@ -21,40 +29,92 @@ function getJson(file) {
 // Bake      → { categories, products, batch } (batch is this week's, or null)
 export async function getCatalogue(store) {
   if (store === 'bake') {
-    const [menu, batch] = await Promise.all([getJson('bake-menu.json'), getJson('bake-batch.json')]);
+    const [menu, batch] = await Promise.all([catalogueFor('bake'), storedBatch() ?? getJson('bake-batch.json')]);
     return { ...menu, batch: batch?.items?.length ? batch : null };
   }
-  return getJson('varieties-products.json');
+  return catalogueFor('varieties');
+}
+
+const FILES = { varieties: 'varieties-products.json', bake: 'bake-menu.json' };
+
+// The owner's edited list if there is one, else the data file.
+async function catalogueFor(store) {
+  const stored = storedCatalogue(store);
+  return stored ? withFilePhotos(stored, FILES[store]) : getJson(FILES[store]);
+}
+
+// A list saved in this browser before the product photos were added has
+// `image: null`; take those from the data file. An image of '' means the owner
+// removed the photo on purpose.
+async function withFilePhotos(catalogue, file) {
+  if (!catalogue.products?.some((p) => p.image == null)) return catalogue;
+  try {
+    const photos = new Map((await getJson(file)).products.map((p) => [p.id, p.image]));
+    return {
+      ...catalogue,
+      products: catalogue.products.map((p) => (p.image == null && photos.get(p.id) ? { ...p, image: photos.get(p.id) } : p)),
+    };
+  } catch {
+    return catalogue;
+  }
 }
 
 export async function placeOrder(order) {
-  saveLocalOrder(order);
+  saveLocalOrder(order); // the customer's "My orders"
+  addOrder(order);       // the shop's order book (Phase 2: sent to the server)
   return { ref: order.ref };
 }
 
-// ---- Owner tools ----------------------------------------------------------------
-// Phase 1: generated demo orders plus sales recorded on this phone (loaded only by
-// admin pages). Phase 2: the backend's real orders, behind a login.
+// ---- Owner tools ------------------------------------------------------------------
 
-export async function getAdminOrders() {
-  const [varieties, bake, demo] = await Promise.all([getCatalogue('varieties'), getCatalogue('bake'), import('./admin/demo-data.js')]);
-  return demo.demoOrders({ varieties, bake });
+// The first visit to the admin copies the product lists in (with demo cost prices)
+// and adds a demo order history, so every screen has something to show. Orders
+// already placed on the website in this browser are kept.
+export async function loadShop() {
+  if (!isSeeded()) {
+    const [varietiesFile, bakeFile, batchFile, seed] = await Promise.all([
+      getJson('varieties-products.json'), getJson('bake-menu.json'), getJson('bake-batch.json'), import('./admin/seed.js'),
+    ]);
+    const varieties = storedCatalogue('varieties') ?? seed.withDemoCosts('varieties', varietiesFile);
+    const bake = storedCatalogue('bake') ?? seed.withDemoCosts('bake', bakeFile);
+    saveCatalogue('varieties', varieties);
+    saveCatalogue('bake', bake);
+    if (!storedBatch()) saveBatch(batchFile);
+    const demo = seed.demoOrderBook({ varieties, bake }, new Date());
+    saveOrders([...listOrders(), ...demo].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)));
+    markSeeded();
+  }
+  return {
+    varieties: await catalogueFor('varieties'),
+    bake: { ...(await catalogueFor('bake')), batch: storedBatch() },
+    orders: listOrders(),
+    settings: getSettings(),
+  };
+}
+
+export async function updateOrder(ref, patch, note) {
+  return updateStoredOrder(ref, patch, note);
 }
 
 export async function recordSale(order) {
-  const demo = await import('./admin/demo-data.js');
-  demo.saveDemoSale(order);
+  if (!addOrder(order)) throw new Error('This browser is out of storage space.');
   return { ref: order.ref };
 }
 
-export async function getReadyRefs() {
-  return (await import('./admin/demo-data.js')).readyRefs();
+export async function saveProducts(store, catalogue) {
+  if (!saveCatalogue(store, catalogue)) throw new Error('This browser is out of storage space.');
 }
 
-export async function setOrderReady(ref, ready) {
-  (await import('./admin/demo-data.js')).setReady(ref, ready);
+export async function saveWeeklyBatch(batch) {
+  if (!saveBatch(batch)) throw new Error('This browser is out of storage space.');
 }
 
-export async function resetDemo() {
-  (await import('./admin/demo-data.js')).resetDemo();
+export async function saveSettings(patch) {
+  if (!storeSettings(patch)) throw new Error('This browser is out of storage space.');
+}
+
+export async function resetShop() {
+  clearShopData();
+  const { clearImages } = await import('./idb.js');
+  await clearImages().catch(() => {});
 }

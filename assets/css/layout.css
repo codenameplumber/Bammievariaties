@@ -9,9 +9,23 @@
   padding: 6px var(--gutter);
 }
 
+.closed-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px var(--gutter);
+  background: var(--danger-50);
+  color: #6B1610;
+  font-size: .9rem;
+  font-weight: 500;
+  text-align: center;
+}
+.closed-bar a { color: inherit; font-weight: 700; }
+
 /* ---------- Header ---------- */
 .site-header {
-  background: rgba(255, 248, 233, .96);
+  background: rgba(255, 255, 255, .97);
   border-bottom: 1px solid var(--line);
   z-index: 40;
 }

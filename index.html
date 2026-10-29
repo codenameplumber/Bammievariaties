@@ -13,11 +13,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="preload" as="image" href="assets/img/hero/hero-1.webp" type="image/webp">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.1.15/swiper-bundle.min.css">
   <link rel="stylesheet" href="assets/css/tokens.css">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/layout.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/store.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/swiper@11.1.15/swiper-bundle.min.js"></script>
   <script type="module" src="assets/js/pages/home.js"></script>
 </head>
 <body>
@@ -43,40 +46,93 @@
   </header>
 
   <main id="main">
-    <section class="home-hero">
-      <div class="container home-hero__grid">
-        <div>
-          <p class="eyebrow">Foodstuffs · Provisions · Stationery · Bake &amp; Cook</p>
-          <h1>Your one-stop shop for everyday needs, and treats <span class="script">made with love.</span></h1>
-          <p class="lead">Order foodstuffs, provisions and stationery for delivery or pickup. Or pre-order chin chin, meat pie, small chops, cakes and meals, made fresh for your date.</p>
-          <div class="home-hero__ctas">
-            <a class="btn btn--brand btn--lg theme-varieties" href="varieties/"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#basket"/></svg>Shop Varieties Store</a>
-            <a class="btn btn--outline btn--lg theme-bake" href="bake/"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#cupcake"/></svg>Pre-order Bake &amp; Cook</a>
+    <section class="hero-slider swiper" aria-roledescription="carousel" aria-label="Bammie highlights" data-hero>
+      <div class="swiper-wrapper">
+          <div class="swiper-slide hero-slide hero-slide--varieties" role="group" aria-roledescription="slide" aria-label="1 of 5">
+            <img class="hero-slide__img" src="assets/img/hero/hero-1.webp" alt="" width="1600" height="800" fetchpriority="high" onerror="this.remove()">
+            <div class="container hero-slide__content">
+              <span class="hero-slide__tag">Bammie Varieties Store</span>
+              <h1 class="hero-slide__title">Foodstuffs, provisions and stationery, packed and ready</h1>
+              <p class="hero-slide__text">Rice, beans, garri, noodles, oil, school books and more. Order on your phone, then pick up or get it delivered.</p>
+              <div class="hero-slide__ctas">
+              <a class="btn btn--gold btn--lg" href="varieties/"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#basket"/></svg>Shop Varieties Store</a>
+              <a class="btn btn--outline-light btn--lg" href="varieties/?cat=foodstuffs">See foodstuffs</a>
+              </div>
+            </div>
           </div>
-          <ul class="trust-row" role="list">
-            <li><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#store"/></svg>A real shop you can walk into</li>
-            <li><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#truck"/></svg>Delivery, pickup or send your rider</li>
-            <li><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#whatsapp"/></svg>Orders confirmed on WhatsApp</li>
-          </ul>
-        </div>
-        <img class="home-hero__badge"
-             src="assets/img/brand/flyer-480.webp"
-             srcset="assets/img/brand/flyer-480.webp 480w, assets/img/brand/flyer-800.webp 800w"
-             sizes="(min-width: 880px) 400px, 72vw"
-             width="480" height="480" fetchpriority="high"
-             alt="Bammie flyer: Bammie Varieties Store for foodstuffs, provisions and stationery, and Bammie Bake and Cook for freshly baked snacks and tasty meals">
+          <div class="swiper-slide hero-slide hero-slide--varieties" role="group" aria-roledescription="slide" aria-label="2 of 5">
+            <img class="hero-slide__img" src="assets/img/hero/hero-2.webp" alt="" width="1600" height="800" loading="lazy" onerror="this.remove()">
+            <div class="container hero-slide__content">
+              <span class="hero-slide__tag">Made by Bammie</span>
+              <h2 class="hero-slide__title">Crunchy Bammie Chips, fried and packed by us</h2>
+              <p class="hero-slide__text">Plantain, potato, cocoyam and coconut chips. Grab a pack for school, work or the road.</p>
+              <div class="hero-slide__ctas">
+              <a class="btn btn--gold btn--lg" href="varieties/?cat=bammie-chips"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chips"/></svg>Shop Bammie Chips</a>
+              </div>
+            </div>
+          </div>
+          <div class="swiper-slide hero-slide hero-slide--bake" role="group" aria-roledescription="slide" aria-label="3 of 5">
+            <img class="hero-slide__img" src="assets/img/hero/hero-3.webp" alt="" width="1600" height="800" loading="lazy" onerror="this.remove()">
+            <div class="container hero-slide__content">
+              <span class="hero-slide__tag">Bammie Bake &amp; Cook</span>
+              <h2 class="hero-slide__title">Chin chin, meat pie and puff-puff, made fresh for your date</h2>
+              <p class="hero-slide__text">Pre-order your snacks and we bake and fry them for the day you need them.</p>
+              <div class="hero-slide__ctas">
+              <a class="btn btn--gold btn--lg" href="bake/"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#cupcake"/></svg>Pre-order snacks</a>
+              <a class="btn btn--outline-light btn--lg" href="bake/#batch">This week's batch</a>
+              </div>
+            </div>
+          </div>
+          <div class="swiper-slide hero-slide hero-slide--bake" role="group" aria-roledescription="slide" aria-label="4 of 5">
+            <img class="hero-slide__img" src="assets/img/hero/hero-4.webp" alt="" width="1600" height="800" loading="lazy" onerror="this.remove()">
+            <div class="container hero-slide__content">
+              <span class="hero-slide__tag">Cakes for every celebration</span>
+              <h2 class="hero-slide__title">Birthday cakes, cupcakes and loaf cakes</h2>
+              <p class="hero-slide__text">Tell us the flavour, colours and message. Order a few days ahead and we'll have it ready.</p>
+              <div class="hero-slide__ctas">
+              <a class="btn btn--gold btn--lg" href="bake/#cat-cakes"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#cake"/></svg>Order a cake</a>
+              </div>
+            </div>
+          </div>
+          <div class="swiper-slide hero-slide hero-slide--bake" role="group" aria-roledescription="slide" aria-label="5 of 5">
+            <img class="hero-slide__img" src="assets/img/hero/hero-5.webp" alt="" width="1600" height="800" loading="lazy" onerror="this.remove()">
+            <div class="container hero-slide__content">
+              <span class="hero-slide__tag">Parties and occasions</span>
+              <h2 class="hero-slide__title">Small chops and party jollof for your guests</h2>
+              <p class="hero-slide__text">Birthdays, weddings, naming ceremonies and office events. Tell us the date and number of guests for a quote.</p>
+              <div class="hero-slide__ctas">
+              <a class="btn btn--gold btn--lg" href="bake/custom-order.html"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#calendar"/></svg>Get a quote</a>
+              <a class="btn btn--outline-light btn--lg" href="bake/#cat-small-chops">See small chops</a>
+              </div>
+            </div>
+          </div>
+      </div>
+      <div class="hero-slider__controls container">
+        <div class="hero-slider__dots" data-hero-dots></div>
+        <button type="button" class="hero-slider__btn" data-hero-pause aria-label="Pause slideshow" hidden><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#pause"/></svg></button>
+        <button type="button" class="hero-slider__btn" data-hero-prev aria-label="Previous slide"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chevron-left"/></svg></button>
+        <button type="button" class="hero-slider__btn" data-hero-next aria-label="Next slide"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chevron-right"/></svg></button>
       </div>
     </section>
 
+    <div class="container">
+      <ul class="promise-bar" role="list">
+        <li><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#store"/></svg><span><strong>A real shop</strong> you can walk into</span></li>
+        <li><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#truck"/></svg><span><strong>Delivery or pickup</strong> or send your own rider</span></li>
+        <li><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#whatsapp"/></svg><span><strong>Confirmed on WhatsApp</strong> before you pay</span></li>
+        <li><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#cupcake"/></svg><span><strong>Made fresh</strong> for the date you pick</span></li>
+      </ul>
+    </div>
+
     <section class="section" aria-labelledby="stores-title">
       <div class="container">
-        <div class="section__head">
+        <div class="section__head reveal">
           <p class="eyebrow">Two stores, one Bammie</p>
           <h2 id="stores-title">Where would you like to shop today?</h2>
         </div>
         <div class="doors">
-          <article class="door theme-varieties">
-            <span class="door__icon"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#basket"/></svg></span>
+          <article class="door theme-varieties reveal">
+            <img class="door__img" src="assets/img/doors/varieties.webp" alt="" width="1200" height="800" loading="lazy" onerror="this.remove()">
             <span class="tag">Daily store · In stock today</span>
             <h3><a class="door__link" href="varieties/">Bammie Varieties Store</a></h3>
             <p class="door__text">Your one-stop shop for everyday needs.</p>
@@ -96,16 +152,16 @@
             </div>
           </article>
 
-          <article class="door theme-bake">
-            <span class="door__icon"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#cupcake"/></svg></span>
+          <article class="door theme-bake reveal">
+            <img class="door__img" src="assets/img/doors/bake.webp" alt="" width="1200" height="800" loading="lazy" onerror="this.remove()">
             <span class="tag">Pre-order store · Made fresh</span>
             <h3><a class="door__link" href="bake/">Bammie Bake and Cook</a></h3>
-            <p class="door__text">Freshly baked, delicious snacks, tasty meals, made with love.</p>
+            <p class="door__text">Freshly baked, delicious snacks and tasty meals, made with love.</p>
             <ul class="door__list">
               <li>Chin chin &amp; snacks</li>
               <li>Meat pie &amp; small chops</li>
               <li>Cakes for occasions</li>
-              <li>Tasty meals</li>
+              <li>Party meals</li>
             </ul>
             <div class="door__foot">
               <div class="door__meta">
@@ -119,43 +175,73 @@
       </div>
     </section>
 
-    <section class="section section--flush-top" aria-labelledby="chips-title">
+    <section class="section section--flush-top" aria-labelledby="popular-title" data-popular hidden>
       <div class="container">
-        <div class="chips-feature">
-          <div>
-            <p class="eyebrow theme-varieties">Made by Bammie</p>
-            <h2 id="chips-title"><span class="script">Bammie</span> Chips</h2>
-            <p>Our own crunchy chips, packed fresh and sold in the Varieties Store.</p>
-            <a class="btn btn--brand theme-varieties" href="varieties/?cat=bammie-chips">Shop chips <svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#arrow-right"/></svg></a>
+        <div class="section-row reveal">
+          <div class="section__head">
+            <p class="eyebrow">Varieties Store</p>
+            <h2 id="popular-title">Popular in the shop</h2>
           </div>
-          <div class="chip-tiles">
-            <a class="chip-tile" href="varieties/?cat=bammie-chips"><span class="thumb thumb--bammie-chips"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chips"/></svg></span>Plantain Chips</a>
-            <a class="chip-tile" href="varieties/?cat=bammie-chips"><span class="thumb thumb--bammie-chips"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chips"/></svg></span>Potato Chips</a>
-            <a class="chip-tile" href="varieties/?cat=bammie-chips"><span class="thumb thumb--bammie-chips"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chips"/></svg></span>Cocoyam Chips</a>
-            <a class="chip-tile" href="varieties/?cat=bammie-chips"><span class="thumb thumb--bammie-chips"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chips"/></svg></span>Coconut Chips</a>
-          </div>
+          <a class="see-all" href="varieties/">See everything <svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#arrow-right"/></svg></a>
         </div>
+        <div class="product-grid" data-popular-grid></div>
+      </div>
+    </section>
+
+    <section class="chips-band" aria-labelledby="chips-title">
+      <div class="container chips-band__grid">
+        <div class="chips-band__intro reveal">
+          <p class="eyebrow">Made by Bammie</p>
+          <h2 id="chips-title">Bammie Chips</h2>
+          <p>Our own crunchy chips, fried in small batches and packed fresh for the Varieties Store.</p>
+          <a class="btn btn--brand theme-varieties" href="varieties/?cat=bammie-chips">Shop chips <svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#arrow-right"/></svg></a>
+        </div>
+        <div class="chip-tiles" data-chip-tiles>
+          <a class="chip-tile" href="varieties/?cat=bammie-chips"><span class="thumb thumb--bammie-chips"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chips"/></svg><img src="assets/img/products/plantain-chips-small.webp" alt="" loading="lazy" width="800" height="600" onerror="this.remove()"></span><span class="chip-tile__name">Plantain Chips</span></a>
+          <a class="chip-tile" href="varieties/?cat=bammie-chips"><span class="thumb thumb--bammie-chips"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chips"/></svg><img src="assets/img/products/potato-chips.webp" alt="" loading="lazy" width="800" height="600" onerror="this.remove()"></span><span class="chip-tile__name">Potato Chips</span></a>
+          <a class="chip-tile" href="varieties/?cat=bammie-chips"><span class="thumb thumb--bammie-chips"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chips"/></svg><img src="assets/img/products/cocoyam-chips.webp" alt="" loading="lazy" width="800" height="600" onerror="this.remove()"></span><span class="chip-tile__name">Cocoyam Chips</span></a>
+          <a class="chip-tile" href="varieties/?cat=bammie-chips"><span class="thumb thumb--bammie-chips"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#chips"/></svg><img src="assets/img/products/coconut-chips.webp" alt="" loading="lazy" width="800" height="600" onerror="this.remove()"></span><span class="chip-tile__name">Coconut Chips</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section theme-bake" aria-labelledby="bake-title" data-bake-picks hidden>
+      <div class="container">
+        <div class="section-row reveal">
+          <div class="section__head">
+            <p class="eyebrow">Bake &amp; Cook</p>
+            <h2 id="bake-title">Fresh from the kitchen</h2>
+            <p class="muted">Pre-order and we make it for the day you need it.</p>
+          </div>
+          <a class="see-all" href="bake/">Full menu <svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#arrow-right"/></svg></a>
+        </div>
+        <div class="product-grid" data-bake-grid></div>
+        <a class="occasion-card reveal" href="bake/custom-order.html">
+          <span class="occasion-card__icon"><svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#calendar"/></svg></span>
+          <span class="occasion-card__text"><strong>Planning a party, wedding or naming ceremony?</strong> Tell us the date and number of guests and we'll send you a quote.</span>
+          <span class="occasion-card__cta">Get a quote <svg class="icon" aria-hidden="true"><use href="assets/img/icons.svg#arrow-right"/></svg></span>
+        </a>
       </div>
     </section>
 
     <section class="section section--flush-top" aria-labelledby="how-title">
       <div class="container">
-        <div class="section__head">
+        <div class="section__head reveal">
           <p class="eyebrow">How ordering works</p>
           <h2 id="how-title">Three steps, no account needed</h2>
         </div>
         <ol class="steps" role="list">
-          <li class="step">
+          <li class="step reveal">
             <span class="step__num">1</span>
             <h3>Pick what you need</h3>
             <p>Add items from the Varieties Store, or choose treats from Bake &amp; Cook for the date you need them.</p>
           </li>
-          <li class="step">
+          <li class="step reveal">
             <span class="step__num">2</span>
             <h3>Choose how you get it</h3>
             <p>We deliver, you pick up from the shop, or you send your own rider. We pack it either way.</p>
           </li>
-          <li class="step">
+          <li class="step reveal">
             <span class="step__num">3</span>
             <h3>Send it on WhatsApp</h3>
             <p>Your order goes to Bammie as a WhatsApp message. We confirm it, and your details are remembered for next time.</p>
@@ -166,7 +252,7 @@
 
     <section class="section section--flush-top" id="visit" aria-labelledby="visit-title">
       <div class="container">
-        <div class="visit">
+        <div class="visit reveal">
           <div>
             <p class="eyebrow">Visit or call us</p>
             <h2 id="visit-title">Come to the shop, or let the shop come to you</h2>
@@ -182,7 +268,7 @@
     </section>
   </main>
 
-  <div class="tagline-band">Quality Products · Great Service · Happy Customers</div>
+  <div class="tagline-band">Quality products · Great service · Happy customers</div>
 
   <footer class="site-footer">
     <div class="container">
@@ -209,6 +295,7 @@
             <li><a href="about.html">About us</a></li>
             <li><a href="about.html#visit">Visit the shop</a></li>
             <li><a href="my-orders.html">My orders</a></li>
+            <li><a href="credits.html">Photo credits</a></li>
           </ul>
         </nav>
         <div class="site-footer__contact">
